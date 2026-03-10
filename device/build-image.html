@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Image — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/" class="active">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Build Image</h2>
+    <h1>Building the <em>Ageless</em> Image</h1>
+    <span class="badge badge-dim">PLANNED — NOT YET IMPLEMENTED</span>
+    <p>
+      The device image is built from the official Milk-V
+      <a href="https://github.com/milkv-duo/duo-buildroot-sdk">duo-buildroot-sdk</a>
+      with an Ageless Linux overlay applied. The overlay includes:
+    </p>
+    <ul style="margin-top:12px; padding-left:24px; color:var(--text);">
+      <li><code>os-release</code> &mdash; identifies the system as Ageless Linux</li>
+      <li><code>REFUSAL</code> notice &mdash; the machine-readable noncompliance declaration</li>
+      <li>First-boot wizard &mdash; account setup that refuses to collect age</li>
+      <li><code>ageless-store</code> client &mdash; curated app catalog for the device</li>
+      <li>Curated app catalog &mdash; application manifests for the store</li>
+    </ul>
+  </div>
+
+  <section>
+    <h3>Prerequisites</h3>
+    <div class="card">
+      <ul style="padding-left:24px; line-height:2;">
+        <li>Linux build host (x86_64 or aarch64)</li>
+        <li>Docker (recommended) or a native toolchain for RISC-V cross-compilation</li>
+        <li><code>git</code></li>
+        <li>~10GB free disk space</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Build Process</h3>
+    <p>Clone the Milk-V SDK, clone the Ageless overlay into it, and run the build script.</p>
+<pre># Clone the SDK
+git clone https://github.com/milkv-duo/duo-buildroot-sdk
+cd duo-buildroot-sdk
+
+# Clone the Ageless overlay
+git clone https://github.com/agelesslinux/agelesslinux ageless-overlay
+
+# Apply overlay and build
+./ageless-overlay/build-ageless.sh duo-s-wifi
+
+# Output: output/ageless-duos-wifi.img</pre>
+  </section>
+
+  <section>
+    <h3>Flashing</h3>
+    <h4>MicroSD</h4>
+<pre># Flash to MicroSD
+sudo dd if=output/ageless-duos-wifi.img of=/dev/sdX bs=4M status=progress</pre>
+    <h4>eMMC via USB</h4>
+    <p>For Duo S boards with onboard eMMC, flash over USB while the board is in burn mode.</p>
+<pre># Flash to eMMC via USB (Duo S with eMMC)
+./usb-burn.sh output/ageless-duos-wifi.img</pre>
+  </section>
+
+  <section>
+    <h3>Overlay Structure</h3>
+    <p>
+      The overlay is a directory tree that maps directly onto the target root filesystem.
+      The build script copies these files into the Buildroot output and configures the
+      first-boot service.
+    </p>
+<pre>ageless-overlay/
+├── etc/
+│   ├── os-release
+│   ├── ageless/
+│   │   ├── REFUSAL
+│   │   └── ab1043-compliance.txt
+│   └── systemd/system/
+│       └── ageless-firstboot.service
+├── opt/ageless/
+│   ├── firstboot.py
+│   ├── store/
+│   └── apps/
+└── build-ageless.sh</pre>
+  </section>
+
+  <section>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">Under Development</h4>
+      <p>
+        The build system and overlay are under active development. This page will be updated
+        with tested instructions when the image pipeline is working. The structure and commands
+        above reflect the planned approach and may change.
+      </p>
+      <p style="margin-top:16px;">
+        <a href="/device/" class="btn btn-outline">Back to Device Overview</a>
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

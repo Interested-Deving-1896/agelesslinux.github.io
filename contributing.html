@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contributing — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html" class="active">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Contributing</h2>
+    <h1>Help Us Stay <em>Ageless</em></h1>
+    <p>
+      Ageless Linux is an open project. The tools, documentation, and research are all public,
+      and contributions are welcome from anyone willing to help keep Linux distributions free
+      of age reporting infrastructure.
+    </p>
+  </div>
+
+  <section>
+    <h3>GitHub Organization</h3>
+    <p>
+      The project lives at <a href="https://github.com/agelesslinux">github.com/agelesslinux</a>
+      and is organized into three repositories:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">
+        <a href="https://github.com/agelesslinux/agelesslinux" style="text-decoration:none;">agelesslinux</a>
+      </h4>
+      <p>
+        Tools and scripts — <code>become-ageless.sh</code>, future removal scripts, and the
+        stub D-Bus daemon. This is where most code contributions go.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">
+        <a href="https://github.com/agelesslinux/agelesslinux.org" style="text-decoration:none;">agelesslinux.org</a>
+      </h4>
+      <p>
+        The main project website — the manifesto, state law map, and public-facing pages.
+        Hosted at <a href="https://agelesslinux.org">agelesslinux.org</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">
+        <a href="https://github.com/agelesslinux/agelesslinux.github.io" style="text-decoration:none;">agelesslinux.github.io</a>
+      </h4>
+      <p>
+        This documentation site — technical guides for using and extending the Ageless Linux
+        tools. Hosted at <a href="https://agelesslinux.github.io">agelesslinux.github.io</a>.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What We Need</h3>
+
+    <div class="card green-card">
+      <span class="badge badge-green">High Priority</span>
+      <h4 style="margin-top:12px;">1. Distro Watchers</h4>
+      <p>
+        Monitor distribution mailing lists, bug trackers, and packaging repos for age reporting
+        implementations. When a distro announces or ships a compliance mechanism, we need to
+        know immediately — what package it's in, what D-Bus interface it exposes, how it stores
+        data, and how it integrates with the desktop.
+      </p>
+      <p style="margin-top:8px;">
+        Key lists to watch: debian-devel, ubuntu-devel, fedora-devel, freedesktop.org GitLab
+        (especially AccountsService and xdg-dbus-proxy).
+      </p>
+    </div>
+
+    <div class="card red-card">
+      <span class="badge badge-red">Critical When Needed</span>
+      <h4 style="margin-top:12px;">2. Removal Script Authors</h4>
+      <p>
+        When a distribution ships age reporting compliance, someone needs to write the script
+        that removes it cleanly. This means understanding the distro's package manager, its
+        D-Bus configuration, and any dependencies other packages might have on the age
+        reporting interface.
+      </p>
+      <p style="margin-top:8px;">
+        Removal scripts should be safe, reversible, and tested. They go in the
+        <a href="https://github.com/agelesslinux/agelesslinux">agelesslinux</a> repo.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="badge badge-blue">Ongoing</span>
+      <h4 style="margin-top:12px;">3. Testing</h4>
+      <p>
+        Verify that removal scripts don't break other system functionality. Age reporting
+        interfaces may be queried by Flatpak portals, GNOME parental controls, or other
+        software — we need to know what breaks and provide
+        <a href="/short-circuit/">short-circuit fixes</a> for each case.
+      </p>
+      <p style="margin-top:8px;">
+        Testing across distros, desktop environments, and Flatpak/Snap configurations is
+        especially valuable.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="badge badge-dim">Research</span>
+      <h4 style="margin-top:12px;">4. Legal Research</h4>
+      <p>
+        Track new state bills modeled on California's <span class="legal-cite">AB 1043</span>,
+        amendments to existing laws, court challenges, and AG enforcement actions. The
+        <a href="https://agelesslinux.org/map.html">state law map</a> needs to stay current.
+      </p>
+      <p style="margin-top:8px;">
+        If you have access to legislative tracking tools (LegiScan, etc.) and can monitor for
+        "age estimation," "age assurance," or "age-appropriate design" bills, that's extremely
+        useful.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="badge badge-dim">Hardware</span>
+      <h4 style="margin-top:12px;">5. Hardware Builders</h4>
+      <p>
+        Build and test <a href="/device/">Ageless Devices</a> — the $12 civil disobedience
+        hardware. Document the build process, test with different SBCs and Linux images,
+        and report what works and what doesn't.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>How to Contribute</h3>
+    <div class="card">
+      <p>
+        <strong>Pull requests</strong> to the appropriate repo are the preferred way to contribute
+        code, documentation, and research. If you're not sure which repo to target, open an issue
+        on <a href="https://github.com/agelesslinux/agelesslinux">agelesslinux/agelesslinux</a>
+        and we'll point you in the right direction.
+      </p>
+      <p style="margin-top:12px;">
+        <strong>Issues</strong> are welcome for bug reports, feature requests, distro
+        implementation sightings, and general discussion. If you've spotted a distro shipping
+        age reporting, please open an issue even if you don't have a removal script ready.
+      </p>
+      <p style="margin-top:16px;">
+        <a href="https://github.com/agelesslinux/agelesslinux/issues/new" class="btn btn-primary">Open an Issue</a>
+        <a href="https://github.com/agelesslinux" class="btn btn-outline" style="margin-left:8px;">View Organization</a>
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Contact</h3>
+    <div class="card">
+      <p>
+        <strong>John McCardle</strong><br>
+        <a href="https://ffwf.net">FFwF Robotics LLC</a><br>
+        <a href="https://ffwf.net/contact">ffwf.net/contact</a>
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ageless Linux — Documentation</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .doc-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px; margin-top:32px; }
+    .doc-grid .card { transition:border-color .2s, transform .2s; }
+    .doc-grid .card:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .doc-grid .card a { text-decoration:none; }
+    .doc-grid .card h4 { margin-top:0; }
+    .doc-grid .card p { font-size:14px; color:var(--text); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html" class="active">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Documentation</h2>
+    <h1>Ageless Linux <em>Docs</em></h1>
+    <p>
+      Ageless Linux provides tools to remove, replace, and short-circuit age reporting
+      infrastructure mandated by state laws. Currently the project ships a Debian conversion
+      script (<code>become-ageless.sh</code>); it will expand as distros begin shipping
+      compliance mechanisms.
+    </p>
+  </div>
+
+  <section>
+    <h3>Guides</h3>
+    <div class="doc-grid">
+
+      <a href="/getting-started.html" style="text-decoration:none; color:inherit;">
+        <div class="card green-card">
+          <span class="badge badge-green">Start Here</span>
+          <h4>Getting Started</h4>
+          <p>Install <code>become-ageless.sh</code>, understand the two modes (standard and flagrant), and learn what the script changes on your system.</p>
+        </div>
+      </a>
+
+      <a href="/age-reporting/" style="text-decoration:none; color:inherit;">
+        <div class="card">
+          <span class="badge badge-blue">Research</span>
+          <h4>Age Reporting Systems</h4>
+          <p>How Linux is implementing age collection: the freedesktop.org D-Bus proposal, AccountsService extensions, and per-distro approaches.</p>
+        </div>
+      </a>
+
+      <a href="/removal/" style="text-decoration:none; color:inherit;">
+        <div class="card red-card">
+          <span class="badge badge-red">Removal</span>
+          <h4>Removal Guides</h4>
+          <p>How to remove age reporting from your distro once implementations ship. Distro-specific scripts and manual procedures.</p>
+        </div>
+      </a>
+
+      <a href="/short-circuit/" style="text-decoration:none; color:inherit;">
+        <div class="card yellow-card">
+          <span class="badge badge-yellow">Workaround</span>
+          <h4>Short-Circuit</h4>
+          <p>Keep software working after removal: stub D-Bus daemons, Flatpak portal fixes, and application-level patches.</p>
+        </div>
+      </a>
+
+      <a href="/device/" style="text-decoration:none; color:inherit;">
+        <div class="card">
+          <span class="badge badge-dim">Hardware</span>
+          <h4>The Ageless Device</h4>
+          <p>Build the $12 civil disobedience hardware: a ready-to-hand Linux device with no age reporting, designed to be given to children.</p>
+        </div>
+      </a>
+
+      <a href="/contributing.html" style="text-decoration:none; color:inherit;">
+        <div class="card">
+          <span class="badge badge-dim">Community</span>
+          <h4>Contributing</h4>
+          <p>Help track implementations, write removal scripts, test across distros, research state laws, and build Ageless Devices.</p>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section>
+    <h3>Current Status</h3>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">No distro has shipped age reporting compliance yet.</h4>
+      <p>
+        California's <span class="legal-cite">AB 1043</span> requires operating system distributors
+        to collect user age information, but no Linux distribution has implemented a compliance
+        mechanism as of this writing. The leading candidate is a
+        <strong>freedesktop.org D-Bus interface proposal</strong> that would expose an age-bracket
+        property through AccountsService, allowing applications to query a user's reported age
+        group.
+      </p>
+      <p>
+        Until implementations ship, <code>become-ageless.sh</code> modifies OS identity strings
+        as a preemptive statement of noncompliance. When distros begin adding age collection,
+        the project will provide targeted removal tools for each distribution.
+      </p>
+      <p style="margin-top:16px;">
+        <a href="/age-reporting/" class="btn btn-outline">Track the D-Bus Proposal</a>
+        <a href="https://agelesslinux.org/map.html" class="btn btn-outline" style="margin-left:8px;">View State Law Map</a>
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

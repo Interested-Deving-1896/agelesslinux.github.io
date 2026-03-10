@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debian Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Debian</h2>
+    <h1>Removing Age Reporting from <em>Debian</em></h1>
+    <p>
+      <span class="badge badge-dim">PENDING &mdash; NO IMPLEMENTATION SHIPPED</span>
+    </p>
+  </div>
+
+  <section>
+    <h3>What We're Watching For</h3>
+    <p>
+      The debian-devel mailing list has seen active discussion on age reporting compliance, with
+      30+ messages across multiple threads. Jamie Null proposed making any age reporting
+      functionality a separate, removable package &mdash; consistent with Debian's long tradition
+      of giving users control over what's installed.
+    </p>
+    <p>
+      If Debian implements age reporting, the most likely path is an optional package selectable
+      during the Debian Installer (d-i) process, similar to how tasksel offers optional software
+      collections. It may also arrive as a dependency of a desktop metapackage (e.g.,
+      <code>gnome</code> or <code>task-desktop</code>).
+    </p>
+  </section>
+
+  <section>
+    <h3>Planned Approach</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">d-i Preseed Snippets</h4>
+      <p>
+        A preseed configuration that instructs the Debian Installer to skip installation of the age
+        reporting package. This prevents the software from ever reaching the system during fresh
+        installs.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">apt purge for Existing Installs</h4>
+      <p>
+        <code>apt purge</code> removes the package and its configuration files. Unlike
+        <code>apt remove</code>, purge ensures no configuration data lingers in
+        <code>/etc/</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">dpkg Hold to Prevent Reinstallation</h4>
+      <p>
+        After removal, use <code>dpkg --set-selections</code> to mark the package as "hold,"
+        preventing it from being pulled back in by dependency resolution during
+        <code>apt upgrade</code>.
+      </p>
+<pre>echo "age-verification-package hold" | sudo dpkg --set-selections</pre>
+      <p>
+        The actual package name will be substituted when an implementation ships.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Why Debian Is Favorable</h3>
+    <div class="card green-card">
+      <p>
+        Debian's tradition of optionality works in our favor. If age reporting ships as a separate
+        package &mdash; as Jamie Null proposed &mdash; removal is trivial: <code>apt purge</code>
+        the package, hold it with dpkg, and optionally install the
+        <a href="/short-circuit/dbus-stub.html">stub daemon</a> to keep dependent applications
+        working.
+      </p>
+      <p>
+        Debian's social contract and its emphasis on user freedom make it one of the less likely
+        distributions to make age reporting mandatory or difficult to remove.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

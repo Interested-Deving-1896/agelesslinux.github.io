@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xdg-desktop-portal — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>xdg-desktop-portal</h2>
+    <h1>Portal-Based <em>Age Signals</em></h1>
+    <p>
+      An alternative approach suggested by KDE developer David Edmundson: route age data through
+      xdg-desktop-portal, the existing permission-gated framework used by Flatpak and Snap
+      applications.
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="badge badge-dim">Suggested &mdash; Not Adopted</span>
+    <p style="margin-top:8px;">
+      Edmundson raised this as the preferred approach on the debian-devel thread (March 1, 2026).
+      It was not developed into a formal spec and was rejected by the original D-Bus proposal's
+      author.
+    </p>
+  </div>
+
+  <section>
+    <h3>Edmundson's Position</h3>
+    <p>
+      David Edmundson argued on the debian-devel mailing list that age reporting should go through
+      xdg-desktop-portal rather than a standalone D-Bus service. His rationale:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Existing Infrastructure</h4>
+      <p>
+        xdg-desktop-portal already solves the problem of giving sandboxed applications controlled
+        access to system data. It handles file access, screen sharing, notifications, and other
+        permission-gated operations. Age data is, functionally, another piece of permission-gated
+        user information — it fits the portal model.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Sandboxing Integration</h4>
+      <p>
+        Flatpak and Snap applications already communicate with the host system through portals. A
+        portal-based age interface would integrate naturally with the existing sandboxing model,
+        rather than requiring sandboxed apps to additionally reach a separate D-Bus service.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Why Rainbolt Rejected This</h3>
+    <p>
+      Aaron Rainbolt (the D-Bus proposal's author) pushed back on the portal approach:
+    </p>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">Data Minimization Concern</h4>
+      <p>
+        xdg-desktop-portal exposes more data than the law requires. Adding age data to the portal
+        framework means sandboxed applications that already have portal access could query age
+        information without explicit, separate user consent. The portal model groups permissions
+        loosely — an app granted access to one portal capability could potentially access others.
+      </p>
+      <p>
+        A standalone D-Bus interface is more minimal: it does exactly one thing and nothing else.
+        There's no ambient access from other portal permissions.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Edmundson's Counter-Argument</h3>
+    <blockquote>
+      "Operating systems have a trillion other bits of information available."
+      <span class="cite">&mdash; David Edmundson, debian-devel, March 2026</span>
+    </blockquote>
+    <p style="margin-top:16px;">
+      Edmundson dismissed the data minimization concerns as "overblown." His argument: the
+      operating system already exposes enormous amounts of user data — locale, timezone, display
+      resolution, installed fonts, hardware identifiers. Adding age bracket to the portal's data
+      set is a marginal increase in exposure on a system that already provides far more identifying
+      information than an age bracket.
+    </p>
+    <p>
+      This is a reasonable technical argument. It is also, from the Ageless Linux perspective,
+      an argument for why the entire portal framework is a removal target — not just the age
+      interface.
+    </p>
+  </section>
+
+  <section>
+    <h3>If This Path Is Taken</h3>
+    <p>If a distribution ships age reporting through xdg-desktop-portal:</p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Interface Location</h4>
+      <p>
+        Age data would be accessible through the portal API, likely at
+        <code>org.freedesktop.portal.AgeVerification</code> or a similar name under the portal
+        namespace. The portal backend would communicate with whatever system service stores the
+        actual age data.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Flatpak Access</h4>
+      <p>
+        Flatpak apps would gain access via the <code>--talk-name</code> permission or a dedicated
+        portal permission. The Flatpak manifest would need to declare this access, and the portal
+        could (in theory) prompt the user before sharing age data with each application.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Snap Access</h4>
+      <p>
+        Snap applications access portals through their confinement interfaces. A new
+        <code>desktop-portal-age</code> interface (or similar) would need to be defined in snapd.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Ageless Linux Position</h3>
+    <div class="card red-card">
+      <span class="badge badge-red">Broader Attack Surface</span>
+      <p style="margin-top:8px;">
+        Portal integration presents a broader attack surface than a standalone daemon. The portal
+        framework is deeply integrated into the desktop — removing or modifying a single portal
+        interface requires careful handling to avoid breaking unrelated portal functionality.
+      </p>
+      <p>
+        If a distribution ships age reporting through xdg-desktop-portal, Ageless Linux will provide
+        portal configuration that blocks the age interface specifically while leaving other portal
+        services intact. This likely involves modifying the portal backend configuration or
+        replacing the age verification portal backend with a stub that returns empty data.
+      </p>
+      <p>
+        See the <a href="/short-circuit/">Short-Circuit</a> section for our approach to stub services.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

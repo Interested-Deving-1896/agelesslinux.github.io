@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ubuntu Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Ubuntu</h2>
+    <h1>Removing Age Reporting from <em>Ubuntu</em></h1>
+    <p>
+      <span class="badge badge-dim">PENDING &mdash; NO IMPLEMENTATION SHIPPED</span>
+    </p>
+  </div>
+
+  <section>
+    <h3>What We're Watching For</h3>
+    <p>
+      Canonical is reviewing the age reporting requirements with legal counsel. Jon Seager, VP of
+      Engineering, has been involved in these discussions. If Ubuntu implements age reporting, it
+      will likely arrive through one of three paths:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">1. GNOME AccountsService Extension</h4>
+      <p>
+        An extension to the existing AccountsService D-Bus interface that adds age bracket
+        properties to user accounts. This would integrate with GNOME's existing user management
+        infrastructure.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">2. Standalone D-Bus Service</h4>
+      <p>
+        A new D-Bus service implementing the freedesktop
+        <code>org.freedesktop.AgeVerification1</code> proposal. This would run as a separate
+        daemon with its own systemd unit and data store.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">3. First-Boot Wizard Modification</h4>
+      <p>
+        An age prompt added to GNOME Initial Setup or Ubuntu Welcome. This would collect age data
+        during the first-boot flow and feed it to one of the above services.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What We Expect to Target</h3>
+    <p>
+      Based on the current D-Bus proposal, these are the likely components an Ubuntu implementation
+      would install. Actual names and paths will be confirmed when an implementation ships.
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Package</h4>
+      <p>
+        A new package &mdash; likely named something like <code>age-verification-daemon</code> or
+        <code>ubuntu-age-reporting</code>. It may be pulled in as a dependency of
+        <code>ubuntu-desktop</code> or <code>gnome-initial-setup</code>.
+      </p>
+
+      <h4>D-Bus Service</h4>
+      <p>
+        Bus name: <code>org.freedesktop.AgeVerification1</code><br>
+        Service file: <code>/usr/share/dbus-1/system-services/org.freedesktop.AgeVerification1.service</code><br>
+        Policy file: <code>/etc/dbus-1/system.d/org.freedesktop.AgeVerification1.conf</code>
+      </p>
+
+      <h4>Systemd Unit</h4>
+      <p>
+        <code>age-verification.service</code> or similar, running as a system service.
+      </p>
+
+      <h4>Data Store</h4>
+      <p>
+        <code>/var/lib/age-verification/</code> for a standalone service, or age fields appended to
+        AccountsService user files in <code>/var/lib/AccountsService/users/</code>.
+      </p>
+
+      <h4>First-Boot Integration</h4>
+      <p>
+        Additional pages in GNOME Initial Setup (<code>/usr/share/gnome-initial-setup/</code>) or
+        the Ubuntu Welcome app.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Planned Approach</h3>
+    <p>
+      When Ubuntu ships an age reporting package, we will target it with the following methods:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Package Removal</h4>
+      <p>
+        <code>apt remove</code> the package and all age-reporting-specific data files. If the
+        package is pulled in as a dependency, identify the dependency chain and break it cleanly.
+      </p>
+
+      <h4>Service Masking</h4>
+      <p>
+        <code>systemctl mask</code> the service unit to prevent it from being started, even if the
+        package is reinstalled by an update.
+      </p>
+
+      <h4>Preseed for Unattended Installs</h4>
+      <p>
+        A preseed snippet that prevents the age reporting package from being installed during
+        automated deployments. Useful for fleet management and institutional installs.
+      </p>
+
+      <h4>Post-Install Script</h4>
+      <p>
+        A script for existing Ubuntu systems that removes the package, masks the service, cleans up
+        stored data, and optionally installs the <a href="/short-circuit/dbus-stub.html">stub
+        daemon</a> to keep dependent apps working.
+      </p>
+    </div>
+
+    <div class="card green-card">
+      <p>
+        When Ubuntu ships age reporting compliance, this page will have tested, step-by-step
+        removal instructions within 48 hours.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

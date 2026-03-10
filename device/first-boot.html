@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>First-Boot Wizard — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .screen-label { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); margin-top:32px; margin-bottom:8px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/" class="active">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>First-Boot Wizard</h2>
+    <h1>Account Setup That <em>Refuses</em></h1>
+    <p>
+      <span class="legal-cite">AB 1043 § 1798.501(a)(1)</span> requires OS providers to
+      "provide an accessible interface at account setup." The Ageless Device provides one.
+      It asks your name. It tells you California law requires your age. It declines to collect it.
+    </p>
+  </div>
+
+  <section>
+    <h3>The Kill Shot</h3>
+    <blockquote>
+      The noncompliance is a UI element. This is not accidental omission. This is a screen
+      that explicitly acknowledges the law and refuses to comply.
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>First-Boot Sequence</h3>
+    <p>
+      The wizard consists of three screens rendered to the device's SPI display via framebuffer
+      writes. The entire sequence takes under thirty seconds.
+    </p>
+
+    <div class="screen-label">Screen 1 &mdash; Name Entry</div>
+<pre>┌─────────────────────────────────────┐
+│  AGELESS LINUX — FIRST BOOT SETUP   │
+│                                     │
+│  Welcome to your new computer.      │
+│                                     │
+│  What is your name?                 │
+│  > _                                │
+└─────────────────────────────────────┘</pre>
+
+    <div class="screen-label">Screen 2 &mdash; The Refusal</div>
+<pre>┌─────────────────────────────────────┐
+│  AGELESS LINUX — FIRST BOOT SETUP   │
+│                                     │
+│  Hello, [NAME].                     │
+│                                     │
+│  California law (AB 1043) requires  │
+│  us to ask your age.                │
+│                                     │
+│  We decline.                        │
+│                                     │
+│  Your user account has been created │
+│  without age data.                  │
+│                                     │
+│  [PRESS ANY KEY TO CONTINUE]        │
+└─────────────────────────────────────┘</pre>
+
+    <div class="screen-label">Screen 3 &mdash; WiFi Setup</div>
+<pre>┌─────────────────────────────────────┐
+│  AGELESS LINUX — FIRST BOOT SETUP   │
+│                                     │
+│  WiFi Setup                         │
+│                                     │
+│  Available networks:                │
+│  1. MyHomeNetwork                   │
+│  2. Library-Guest                   │
+│  3. Skip (no network)              │
+│                                     │
+│  Select: _                          │
+└─────────────────────────────────────┘</pre>
+  </section>
+
+  <section>
+    <h3>Implementation</h3>
+    <div class="card">
+      <h4 style="margin-top:0;">Runtime</h4>
+      <p>
+        Python script using Pillow for text rendering, writing directly to
+        <code>/dev/fb0</code> (framebuffer) or via <code>fbterm</code>. Input is read from
+        the USB keyboard via standard <code>stdin</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Systemd Integration</h4>
+      <p>
+        Runs as a <code>systemd</code> oneshot service
+        (<code>ageless-firstboot.service</code>) on first boot. The service is
+        <code>WantedBy=multi-user.target</code> and runs before the login prompt.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">User Creation</h4>
+      <p>
+        The wizard creates a UNIX user account via <code>useradd</code> using the name
+        entered on Screen 1. No age, birthdate, or demographic data is stored anywhere
+        on the system. The account is a standard unprivileged user with
+        <code>sudo</code> access.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Completion Flag</h4>
+      <p>
+        On successful completion, the wizard writes a flag file at
+        <code>/etc/ageless/.firstboot-complete</code>. The systemd service checks for
+        this file via <code>ConditionPathExists=!/etc/ageless/.firstboot-complete</code>
+        and will not run again once the flag exists.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <span class="badge badge-dim">PLANNED — IMPLEMENTATION IN PROGRESS</span>
+      <p style="margin-top:16px;">
+        The wizard is the centerpiece of the device's legal argument. Every element is
+        deliberate: the acknowledgment of the statute, the explicit refusal, the creation
+        of an account without age data. This is civil disobedience compiled into a boot
+        sequence.
+      </p>
+      <p style="margin-top:16px;">
+        <a href="/device/" class="btn btn-outline">Back to Device Overview</a>
+        <a href="/device/build-image.html" class="btn btn-outline" style="margin-left:8px;">Build Image</a>
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

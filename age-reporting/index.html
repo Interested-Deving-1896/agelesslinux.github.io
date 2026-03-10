@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Age Reporting Systems — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Age Reporting Systems</h2>
+    <h1>How Linux Is <em>Implementing</em> Age Collection</h1>
+    <p>
+      California's <span class="legal-cite">AB 1043</span> and similar state laws require operating
+      system providers to collect age data from users and expose it to applications via API. No Linux
+      distribution has shipped a compliance mechanism yet, but several proposals are under active
+      discussion. This section documents what's being proposed so we can build removal tools the
+      moment implementations ship.
+    </p>
+  </div>
+
+  <section>
+    <h3>What the Law Requires</h3>
+    <p>
+      At the OS level, AB 1043 creates three obligations for operating system distributors:
+    </p>
+    <div class="card">
+      <h4 style="margin-top:0;">1. Age Collection Interface</h4>
+      <p>
+        An accessible interface during account setup that prompts for the user's age or date of
+        birth. The statute requires this to be presented during the initial setup flow — not buried
+        in settings.
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">2. Real-Time Age Bracket API</h4>
+      <p>
+        A programmatic interface that reports the user's age bracket to applications at runtime.
+        Applications are expected to query this API and adjust their behavior accordingly — restricting
+        content, disabling features, or refusing to launch for underage users.
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">3. Data Minimization</h4>
+      <p>
+        The system must expose the minimum information necessary. Rather than providing an exact age
+        or date of birth, the API should report only an age bracket.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>The Four Age Brackets</h3>
+    <p>
+      The statute defines four age categories that the OS must distinguish:
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:16px;">
+      <div class="card red-card" style="text-align:center;">
+        <span class="badge badge-red">Bracket 1</span>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:8px;">Under 13</p>
+      </div>
+      <div class="card yellow-card" style="text-align:center;">
+        <span class="badge badge-yellow">Bracket 2</span>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:8px;">13 &ndash; 15</p>
+      </div>
+      <div class="card" style="text-align:center; border-color:var(--blue);">
+        <span class="badge badge-blue">Bracket 3</span>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:8px;">16 &ndash; 17</p>
+      </div>
+      <div class="card green-card" style="text-align:center;">
+        <span class="badge badge-green">Bracket 4</span>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:8px;">18+</p>
+      </div>
+    </div>
+    <p style="margin-top:16px;">
+      In the proposed D-Bus interface, bracket <code>0</code> means "unknown" — the user has not
+      provided age information. This is the value Ageless Linux intends to return for all queries.
+    </p>
+  </section>
+
+  <section>
+    <h3>Proposed Mechanisms</h3>
+    <p>
+      Four implementation paths are under discussion across the Linux ecosystem. Each is documented
+      in detail:
+    </p>
+
+    <a href="/age-reporting/dbus.html" style="text-decoration:none; color:inherit;">
+      <div class="card yellow-card" style="margin-top:20px;">
+        <span class="badge badge-yellow">Leading Candidate</span>
+        <h4 style="margin-top:12px;">D-Bus Interface</h4>
+        <p>
+          The <code>org.freedesktop.AgeVerification1</code> proposal — a standalone D-Bus service
+          with <code>SetAge</code>, <code>SetDateOfBirth</code>, and <code>GetAgeBracket</code>
+          methods. Proposed by Aaron Rainbolt (Kicksecure/Whonix) on March 1, 2026. Cross-posted
+          to Debian, Ubuntu, Fedora, and freedesktop.org mailing lists.
+        </p>
+      </div>
+    </a>
+
+    <a href="/age-reporting/accountsservice.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">Speculative</span>
+        <h4 style="margin-top:12px;">AccountsService</h4>
+        <p>
+          The GNOME/systemd user account service. A natural place for age data, but described as
+          "effectively obsolete" by KDE developer David Edmundson. Not formally proposed.
+        </p>
+      </div>
+    </a>
+
+    <a href="/age-reporting/xdg-portal.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">Suggested</span>
+        <h4 style="margin-top:12px;">xdg-desktop-portal</h4>
+        <p>
+          David Edmundson suggested routing age data through xdg-desktop-portal, which already
+          handles permission-gated data access for sandboxed apps (Flatpak, Snap). Rainbolt
+          rejected this approach on data minimization grounds.
+        </p>
+      </div>
+    </a>
+
+    <a href="/age-reporting/distro-specific.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-blue">Tracking</span>
+        <h4 style="margin-top:12px;">Distro-Specific Implementations</h4>
+        <p>
+          Where every major distribution stands: Debian, Ubuntu, Fedora, Arch, Pop!_OS, openSUSE,
+          Red Hat, Valve, Kicksecure/Whonix, MidnightBSD, and others. Updated as positions change.
+        </p>
+      </div>
+    </a>
+
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

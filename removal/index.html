@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Removal Guides — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Removal Guides</h2>
+    <h1>Undo <em>Everything</em></h1>
+    <p>
+      When distributions ship age reporting compliance, Ageless Linux will provide tested removal
+      scripts for each. Our commitment: for every age collection mechanism that ships, we will
+      publish a way to remove it cleanly.
+    </p>
+  </div>
+
+  <section>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">No implementation shipped yet</h4>
+      <p>
+        No Linux distribution has shipped an age reporting implementation as of March 2026.
+        These guides will be populated with tested, step-by-step removal procedures as
+        implementations arrive. What you see below is our planned approach for each distribution.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Principles of Removal</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">1. Remove, don't just disable</h4>
+      <p>
+        Systemd masking is a start &mdash; it prevents a service from running. Package removal is
+        better &mdash; it removes the code from the system entirely. Preventing installation via
+        preseed, kickstart, or pacman hooks is best &mdash; the code never touches your disk.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">2. Don't break dependent software</h4>
+      <p>
+        Applications may begin querying the age bracket API. Ripping out the service without
+        providing a replacement will cause D-Bus errors, which can crash apps or prevent them from
+        launching. Use the <a href="/short-circuit/">short-circuit approach</a>: install a stub
+        daemon that returns "unknown" (bracket 0) for all queries. Apps get a valid response. No
+        age data is collected.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">3. Test thoroughly</h4>
+      <p>
+        A removal that breaks login, first-boot, or package management is worse than the thing
+        being removed. Every removal guide we publish will include a test procedure and a rollback
+        path.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">4. Document the attack surface</h4>
+      <p>
+        For each implementation, we will document every file, service, D-Bus interface, and
+        configuration path it touches. You can't remove what you can't find.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Distro-Specific Guides</h3>
+
+    <a href="/removal/ubuntu.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">PENDING</span>
+        <h4 style="margin-top:12px;">Ubuntu / GNOME</h4>
+        <p>Canonical's likely approach via AccountsService or a standalone D-Bus service. Removal via apt, systemctl, and preseed.</p>
+      </div>
+    </a>
+
+    <a href="/removal/debian.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">PENDING</span>
+        <h4 style="margin-top:12px;">Debian</h4>
+        <p>Debian's tradition of optionality and the debian-devel discussion. Removal via d-i preseed, apt purge, and dpkg holds.</p>
+      </div>
+    </a>
+
+    <a href="/removal/fedora.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">PENDING</span>
+        <h4 style="margin-top:12px;">Fedora</h4>
+        <p>Fedora's possible approach via Anaconda or a systemd service. Removal via kickstart, dnf, and rpm.</p>
+      </div>
+    </a>
+
+    <a href="/removal/arch.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">PENDING</span>
+        <h4 style="margin-top:12px;">Arch Linux</h4>
+        <p>Arch's minimal philosophy and the unlikely path to mandatory age reporting. Removal via pacman hooks and IgnorePkg.</p>
+      </div>
+    </a>
+
+    <a href="/removal/generic.html" style="text-decoration:none; color:inherit;">
+      <div class="card">
+        <span class="badge badge-dim">PENDING</span>
+        <h4 style="margin-top:12px;">Generic (Any Distro)</h4>
+        <p>Distribution-agnostic removal: D-Bus service files, systemd units, data directories, and AccountsService fields.</p>
+      </div>
+    </a>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

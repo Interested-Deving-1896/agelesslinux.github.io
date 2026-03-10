@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D-Bus Age Verification Interface — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>D-Bus Interface</h2>
+    <h1>org.freedesktop.<em>AgeVerification1</em></h1>
+    <p>
+      A proposed cross-distribution D-Bus service for age bracket reporting. This is the leading
+      candidate for how Linux will comply with <span class="legal-cite">AB 1043</span> and similar
+      state-level age verification mandates.
+    </p>
+  </div>
+
+  <div class="card yellow-card">
+    <span class="badge badge-yellow">Proposal &mdash; Not Yet Adopted</span>
+    <p style="margin-top:8px;">
+      This interface has been proposed on multiple mailing lists but has not been accepted by
+      freedesktop.org, adopted by any distribution, or merged into any codebase. It remains under
+      discussion.
+    </p>
+  </div>
+
+  <section>
+    <h3>Background</h3>
+    <p>
+      The proposal was published on March 1, 2026 by Aaron Rainbolt, a contributor to the Kicksecure
+      and Whonix projects. Rainbolt cross-posted the proposal to four mailing lists simultaneously:
+    </p>
+    <ul style="margin-top:12px; padding-left:24px; line-height:2;">
+      <li><code>debian-devel@lists.debian.org</code></li>
+      <li><code>ubuntu-devel@lists.ubuntu.com</code></li>
+      <li><code>devel@lists.fedoraproject.org</code></li>
+      <li><code>xdg@lists.freedesktop.org</code></li>
+    </ul>
+    <p style="margin-top:12px;">
+      The intent was to establish a cross-distro standard before any individual distribution
+      implemented its own mechanism, avoiding fragmentation.
+    </p>
+  </section>
+
+  <section>
+    <h3>Design Approach</h3>
+    <p>
+      Rainbolt described this as a "hybrid" approach: a standalone D-Bus service that does not
+      require modifying AccountsService, xdg-desktop-portal, or any existing system component.
+      The service runs independently and can be packaged and shipped by any distribution without
+      touching core system services.
+    </p>
+    <p>
+      This was a deliberate choice. By avoiding changes to existing services, the proposal sidesteps
+      the need to backport modifications to stable releases — a significant concern for distributions
+      like Debian that maintain long-term stable branches.
+    </p>
+  </section>
+
+  <section>
+    <h3>Interface Specification</h3>
+    <p>The proposed D-Bus interface defines three methods:</p>
+    <pre>&lt;interface name="org.freedesktop.AgeVerification1"&gt;
+  &lt;method name="SetAge"&gt;
+    &lt;arg name="username" type="s" direction="in"/&gt;
+    &lt;arg name="age_years" type="u" direction="in"/&gt;
+  &lt;/method&gt;
+  &lt;method name="SetDateOfBirth"&gt;
+    &lt;arg name="username" type="s" direction="in"/&gt;
+    &lt;arg name="date_iso8601" type="s" direction="in"/&gt;
+  &lt;/method&gt;
+  &lt;method name="GetAgeBracket"&gt;
+    &lt;arg name="username" type="s" direction="in"/&gt;
+    &lt;arg name="bracket" type="u" direction="out"/&gt;
+    &lt;!-- 0 = unknown, 1 = under 13, 2 = 13-15, 3 = 16-17, 4 = 18+ --&gt;
+  &lt;/method&gt;
+&lt;/interface&gt;</pre>
+
+    <div class="card">
+      <h4 style="margin-top:0;">SetAge</h4>
+      <p>
+        Accepts a username and an integer age in years. The daemon converts this to the appropriate
+        bracket and stores only the bracket value.
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">SetDateOfBirth</h4>
+      <p>
+        Accepts a username and an ISO 8601 date string. The daemon calculates the current age,
+        converts to a bracket, and stores the bracket. In Kicksecure's intended implementation,
+        the actual date of birth is not persisted.
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">GetAgeBracket</h4>
+      <p>
+        Returns the stored bracket for a given username. The return value is an unsigned integer:
+      </p>
+      <ul style="margin-top:8px; padding-left:24px; line-height:2;">
+        <li><code>0</code> &mdash; Unknown (no age data provided)</li>
+        <li><code>1</code> &mdash; Under 13</li>
+        <li><code>2</code> &mdash; 13&ndash;15</li>
+        <li><code>3</code> &mdash; 16&ndash;17</li>
+        <li><code>4</code> &mdash; 18+</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Data Storage</h3>
+    <p>
+      The proposal specifies that age bracket data is stored in root-owned files that are not
+      world-readable. Only the bracket value is stored — not the user's actual age or date of birth.
+      This is a data minimization design: the daemon accepts precise data as input but retains only
+      the coarsest representation needed for compliance.
+    </p>
+    <p>
+      At least in Kicksecure's intended implementation, calling <code>SetDateOfBirth</code> does
+      not persist the date. The date is used to compute the bracket, then discarded.
+    </p>
+  </section>
+
+  <section>
+    <h3>No UI Specified</h3>
+    <p>
+      The proposal deliberately does not specify a user interface for age collection. The D-Bus
+      service is a backend; the frontend — the dialog that asks users for their age during account
+      creation — is left to individual distributions and desktop environments to implement.
+    </p>
+    <p>
+      This means GNOME, KDE, and other DEs would each need to build their own age prompt, or
+      distributions would need to add it to their installer or first-boot wizard.
+    </p>
+  </section>
+
+  <section>
+    <h3>Known Issues</h3>
+    <p>
+      The mailing list discussion surfaced several substantive problems with the proposal:
+    </p>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">1. International Age Brackets</h4>
+      <p>
+        Heinrich Schuchardt pointed out that the US-centric four-bracket model doesn't map to other
+        jurisdictions. Germany, for example, uses age ratings of 0+, 6+, 12+, 16+, and 18+. A
+        hardcoded set of four brackets would be insufficient for international compliance.
+      </p>
+      <p>
+        Rainbolt acknowledged "tunnel vision" on this point and committed to revising the spec
+        to support configurable bracket sets per jurisdiction.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">2. Self-Declaration Is Insufficient for Some Laws</h4>
+      <p>
+        New York's <span class="legal-cite">S8102</span> requires "commercially reasonable" age
+        verification — not just self-declaration. The D-Bus proposal only handles self-reported
+        data: the user types in their age, and the system believes them. This satisfies AB 1043's
+        requirements but may not satisfy stricter laws that require actual verification (document
+        checks, facial analysis, etc.).
+      </p>
+    </div>
+
+    <div class="card red-card">
+      <h4 style="margin-top:0;">3. Privacy and Fingerprinting</h4>
+      <p>
+        Users on the Whonix forums — an ironic venue given Whonix's focus on anonymity — called the
+        proposal "a privacy disaster" and "a new fingerprinting mechanism: age bracket." Any
+        application can query the D-Bus interface to learn whether the user is a minor. Combined
+        with other system data, age bracket becomes another vector for cross-application user
+        identification.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">4. Scope Creep</h4>
+      <p>
+        Gioele Barabucci noted that AB 1043's language is broad enough to arguably require
+        <em>every</em> application — including command-line utilities like <code>cp</code> — to
+        query the age signal on launch. The statute applies to software that "enables access to
+        content," and a file copy utility enables access to content stored in files. Whether this
+        interpretation survives judicial review is an open question, but the text supports it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Ageless Linux Position</h3>
+    <div class="card red-card">
+      <span class="badge badge-red">Our Response</span>
+      <p style="margin-top:8px;">
+        When a distribution ships a working <code>org.freedesktop.AgeVerification1</code> daemon,
+        Ageless Linux will provide a drop-in replacement that always returns bracket <code>0</code>
+        (unknown) for all queries. The replacement daemon will have the same D-Bus name and interface,
+        so applications that depend on the API will continue to function — they'll just never receive
+        age data.
+      </p>
+      <p>
+        See the <a href="/short-circuit/">Short-Circuit</a> section for implementation details.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

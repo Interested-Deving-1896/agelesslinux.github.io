@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distro-Specific Implementations — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Distro Status</h2>
+    <h1>Who's Doing <em>What</em></h1>
+    <p>
+      As of March 2026, no Linux distribution has shipped an age reporting implementation. Here's
+      where each stands.
+    </p>
+    <p style="margin-top:8px;">
+      <span class="badge badge-dim" style="font-size:10px;">Last updated: March 10, 2026</span>
+    </p>
+  </div>
+
+  <!-- Debian -->
+  <div class="card yellow-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Debian</h4>
+      <span class="badge badge-yellow">Discussing</span>
+    </div>
+    <p style="margin-top:12px;">
+      The debian-devel mailing list has seen 30+ messages on age verification compliance, with the
+      thread active through March 10. The community is split into four camps:
+    </p>
+    <ul style="margin-top:8px; padding-left:24px; line-height:2;">
+      <li><strong>Comply minimally</strong> &mdash; Rainbolt and Fore advocate shipping the D-Bus proposal as an optional package</li>
+      <li><strong>Modular/removable package</strong> &mdash; Jamie Null and North-Keys argue compliance should be a package that users can remove without breaking the system</li>
+      <li><strong>Do nothing</strong> &mdash; Heuser and Stoutner argue Debian has no obligation to comply with a single state's law</li>
+      <li><strong>Satirical opposition</strong> &mdash; FloofyWolf created <code>systemd-censord</code>, a mock compliance package</li>
+    </ul>
+    <p style="margin-top:12px;">
+      Alex North-Keys (March 8) posted a detailed argument that anonymity protects children better
+      than age verification, and that building age infrastructure into the OS undermines the privacy
+      of the users it claims to protect.
+    </p>
+    <p style="margin-top:8px;">
+      No General Resolution has been proposed. No DPL statement has been issued.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://lists.debian.org/debian-devel/2026/03/" style="color:var(--cyan);">lists.debian.org/debian-devel/2026/03/</a>
+    </p>
+  </div>
+
+  <!-- Ubuntu / Canonical -->
+  <div class="card" style="border-color:var(--blue);">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Ubuntu / Canonical</h4>
+      <span class="badge badge-blue">Watching</span>
+    </div>
+    <p style="margin-top:12px;">
+      Jon Seager (VP Engineering) stated that Canonical is reviewing the situation with legal
+      counsel but has "no concrete plans on how, or even whether, Ubuntu will change." Rainbolt's
+      D-Bus proposal was cross-posted to ubuntu-devel, but the discussion there has been limited
+      compared to Debian.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://discourse.ubuntu.com" style="color:var(--cyan);">discourse.ubuntu.com</a>
+    </p>
+  </div>
+
+  <!-- Fedora -->
+  <div class="card" style="border-color:var(--blue);">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Fedora</h4>
+      <span class="badge badge-blue">Exploring</span>
+    </div>
+    <p style="margin-top:12px;">
+      Jef Spaleta (Fedora Project Leader) posted on Fedora Discussion that the project is
+      exploring options. Key points from his comments: no telemetry, a local-only API would handle
+      it, and the implementation could be as simple as a new file in <code>/etc/</code> populated
+      during account creation.
+    </p>
+    <p>
+      The legal list is aware of the issue. No mechanism has been shipped or formally proposed
+      within Fedora.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://discussion.fedoraproject.org" style="color:var(--cyan);">discussion.fedoraproject.org</a>
+    </p>
+  </div>
+
+  <!-- System76 / Pop!_OS -->
+  <div class="card green-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">System76 / Pop!_OS</h4>
+      <span class="badge badge-green">Opposed</span>
+    </div>
+    <p style="margin-top:12px;">
+      Carl Richell (CEO, System76) published a blog post opposing age verification mandates. His
+      central argument: the laws are technically ineffective because any child can spin up a virtual
+      machine and set their age to 18. He expressed hope that the laws will be repealed.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://blog.system76.com" style="color:var(--cyan);">blog.system76.com</a>
+    </p>
+  </div>
+
+  <!-- Arch Linux -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Arch Linux</h4>
+      <span class="badge badge-dim">Silent</span>
+    </div>
+    <p style="margin-top:12px;">
+      A forum thread and mailing list thread exist, but no official position has been taken. The
+      community is largely dismissive — Arch lacks centralized account infrastructure, has no
+      installer-driven account setup flow, and its rolling-release model doesn't lend itself to
+      mandatory compliance features.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Sources: <a href="https://bbs.archlinux.org" style="color:var(--cyan);">bbs.archlinux.org</a>,
+      arch-general mailing list
+    </p>
+  </div>
+
+  <!-- openSUSE / SUSE -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">openSUSE / SUSE</h4>
+      <span class="badge badge-dim">Silent</span>
+    </div>
+    <p style="margin-top:12px;">
+      No discussion found on any official mailing list, forum, or blog.
+    </p>
+  </div>
+
+  <!-- Red Hat / IBM -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Red Hat / IBM</h4>
+      <span class="badge badge-dim">Silent</span>
+    </div>
+    <p style="margin-top:12px;">
+      No public statement found from Red Hat or IBM regarding OS-level age verification. The Fedora
+      discussion (above) is the closest proxy, but Fedora and Red Hat operate with separate
+      governance.
+    </p>
+  </div>
+
+  <!-- Valve / SteamOS -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Valve / SteamOS</h4>
+      <span class="badge badge-dim">Silent</span>
+    </div>
+    <p style="margin-top:12px;">
+      No response from Valve. Notable: the Steam Deck is an Arch-based Linux device actively
+      marketed to minors, making it a conspicuous target for age verification mandates. Valve's
+      silence is likely strategic — they already have age gates in the Steam storefront and may
+      argue that's sufficient.
+    </p>
+  </div>
+
+  <!-- MidnightBSD -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">MidnightBSD</h4>
+      <span class="badge badge-red">Excluding</span>
+    </div>
+    <p style="margin-top:12px;">
+      MidnightBSD modified its license to exclude California residents from desktop use, effective
+      January 1, 2027. The project is also excluding Brazil (effective March 17, 2026) and
+      threatening Colorado, Illinois, and New York exclusions if pending bills pass.
+    </p>
+    <p>
+      The project has separately drafted an alternative compliance approach: writing age data to a
+      root-only readable file. However, the license exclusion appears to be the primary response.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://lunduke.substack.com" style="color:var(--cyan);">lunduke.substack.com</a>
+    </p>
+  </div>
+
+  <!-- Kicksecure / Whonix -->
+  <div class="card yellow-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Kicksecure / Whonix</h4>
+      <span class="badge badge-yellow">Complying</span>
+    </div>
+    <p style="margin-top:12px;">
+      Aaron Rainbolt is driving the <a href="/age-reporting/dbus.html">D-Bus proposal</a> from
+      within these projects. Kicksecure and Whonix are positioned to be the first distributions to
+      ship an implementation.
+    </p>
+    <p>
+      This has not been well-received by the projects' own user base. Whonix forum users — people
+      who chose Whonix specifically for privacy — are calling the proposal "a privacy disaster"
+      and "a new fingerprinting mechanism: age bracket."
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://forums.whonix.org" style="color:var(--cyan);">forums.whonix.org</a>
+    </p>
+  </div>
+
+  <!-- DB48X -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">DB48X</h4>
+      <span class="badge badge-red">Excluding CA/CO</span>
+    </div>
+    <p style="margin-top:12px;">
+      DB48X, an open-source calculator firmware, declared itself "probably an operating system
+      under these laws" and added a legal notice forbidding use by California and Colorado
+      residents. A calculator firmware taking this position illustrates the breadth of the
+      statute's language.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://github.com/c3d/db48x" style="color:var(--cyan);">github.com/c3d/db48x</a>
+    </p>
+  </div>
+
+  <!-- Ageless Linux -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Ageless Linux</h4>
+      <span class="badge badge-red">Refused</span>
+    </div>
+    <p style="margin-top:12px;">
+      Deliberately noncompliant. Distributes removal tools. That's us.
+    </p>
+    <p>
+      <a href="/index.html" class="btn btn-outline" style="margin-top:12px;">Read the docs</a>
+    </p>
+  </div>
+
+  <section>
+    <h3>Industry Organizations</h3>
+    <div class="card">
+      <p>
+        The following organizations all sat out <span class="legal-cite">AB 1043</span> during its
+        passage through the California legislature. None submitted testimony, published public
+        analysis, or filed formal opposition on the record:
+      </p>
+      <ul style="margin-top:12px; padding-left:24px; line-height:2.2;">
+        <li><strong>Open Source Initiative (OSI)</strong></li>
+        <li><strong>Free Software Foundation (FSF)</strong></li>
+        <li><strong>Software Freedom Conservancy</strong></li>
+        <li><strong>Linux Foundation</strong></li>
+      </ul>
+      <p style="margin-top:12px;">
+        A law that mandates behavioral changes in every operating system distributed in California
+        passed without a word from the organizations that claim to represent free and open-source
+        software.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

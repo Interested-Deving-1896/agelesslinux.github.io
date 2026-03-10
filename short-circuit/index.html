@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Short-Circuit — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/" class="active">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Short-Circuit</h2>
+    <h1>Keep Software <em>Working</em></h1>
+    <p>
+      Removing age reporting infrastructure may break applications that expect an age bracket
+      signal. The short-circuit approach: replace the real implementation with a stub that always
+      returns "unknown" (bracket 0). Apps get a valid D-Bus response. No age data is collected or
+      transmitted.
+    </p>
+  </div>
+
+  <section>
+    <blockquote>
+      This is the digital equivalent of <code>/dev/null</code> &mdash; a compliant interface
+      that does nothing.
+    </blockquote>
+  </section>
+
+  <section>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">No applications currently request age bracket signals</h4>
+      <p>
+        As of March 2026, no Linux distribution has shipped an age reporting implementation, and
+        no application queries the <code>org.freedesktop.AgeVerification1</code> interface. When
+        implementations ship and applications begin requesting age data, these stubs will be ready.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>The Approach</h3>
+    <p>
+      Three layers of short-circuiting cover the full range of Linux application packaging:
+    </p>
+
+    <a href="/short-circuit/dbus-stub.html" style="text-decoration:none; color:inherit;">
+      <div class="card yellow-card" style="margin-top:20px;">
+        <span class="badge badge-yellow">Primary</span>
+        <h4 style="margin-top:12px;">D-Bus Stub Daemon</h4>
+        <p>
+          A minimal daemon that registers <code>org.freedesktop.AgeVerification1</code> on the
+          system bus and responds to <code>GetAgeBracket</code> with 0 (unknown) for all users.
+          <code>SetAge</code> and <code>SetDateOfBirth</code> accept input and discard it
+          silently. Any application that queries the age bracket API gets a valid, well-formed
+          response.
+        </p>
+      </div>
+    </a>
+
+    <div class="card">
+      <span class="badge badge-dim">Planned</span>
+      <h4 style="margin-top:12px;">Flatpak Portal Override</h4>
+      <p>
+        Sandboxed Flatpak applications access system services through xdg-desktop-portal. If a
+        portal for age bracket data is added, we will provide a portal override that blocks access
+        or returns the "unknown" bracket. Flatpak's permission system already supports per-app
+        overrides via <code>flatpak override</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="badge badge-dim">Planned</span>
+      <h4 style="margin-top:12px;">AppImage and Snap Isolation</h4>
+      <p>
+        AppImages run with the user's full permissions and can access D-Bus directly &mdash; the
+        stub daemon handles this case. Snaps use AppArmor profiles that can restrict D-Bus access;
+        we will document any cases where a snap's confinement profile grants access to the age
+        bracket bus name and how to revoke it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>How It Fits Together</h3>
+    <p>
+      The removal and short-circuit approaches are designed to work in sequence:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Step 1: Remove</h4>
+      <p>
+        Use the <a href="/removal/">removal guides</a> to uninstall the real age reporting
+        implementation &mdash; package, service, data files, and all.
+      </p>
+
+      <h4>Step 2: Replace</h4>
+      <p>
+        Install the stub daemon. It occupies the same D-Bus bus name, so applications see a
+        working service. No code changes or application patching needed.
+      </p>
+
+      <h4>Step 3: Prevent</h4>
+      <p>
+        Use package manager holds, pacman hooks, or preseed directives to prevent the real
+        implementation from being reinstalled by updates. The stub remains in place.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

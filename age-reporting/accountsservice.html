@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccountsService — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>AccountsService</h2>
+    <h1>GNOME <em>AccountsService</em> Integration</h1>
+    <p>
+      AccountsService is the GNOME/systemd service that manages local user account data. It would
+      be a natural home for age bracket fields, but it has not been formally proposed for this
+      purpose.
+    </p>
+  </div>
+
+  <div class="card">
+    <span class="badge badge-dim">Not Proposed &mdash; Speculative</span>
+    <p style="margin-top:8px;">
+      No one has formally proposed adding age data to AccountsService. This page documents why it
+      was considered and why the D-Bus proposal went in a different direction.
+    </p>
+  </div>
+
+  <section>
+    <h3>What Is AccountsService?</h3>
+    <p>
+      AccountsService (<code>accounts-daemon</code>) is a D-Bus service that provides a
+      system-level interface for managing user accounts. It stores per-user data such as display
+      name, profile photo, language preferences, and login frequency. On GNOME-based systems, it's
+      the canonical source for user metadata.
+    </p>
+    <p>
+      User data is stored in plain-text key-value files under
+      <code>/var/lib/AccountsService/users/</code>, with one file per user named after the username.
+      Adding age bracket support would likely mean adding a new key to these files — something like
+      <code>AgeBracket=4</code>.
+    </p>
+  </section>
+
+  <section>
+    <h3>Why It Was Passed Over</h3>
+    <p>
+      Aaron Rainbolt explicitly chose not to build age reporting into AccountsService. His reasoning:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Backporting Burden</h4>
+      <p>
+        Modifying AccountsService would require patching and releasing a new version of an
+        established system service. For distributions with stable releases — Debian in particular —
+        this means either backporting the patch to every supported release or waiting for the next
+        major version. A standalone D-Bus service can be packaged and shipped independently,
+        immediately, on any release.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">"Effectively Obsolete"</h4>
+      <p>
+        David Edmundson (KDE developer), responding on the debian-devel thread, described
+        AccountsService as "effectively obsolete" — being supplanted by systemd's
+        <code>userdb</code> and <code>homed</code> services. Building compliance infrastructure
+        on top of a service that may be deprecated adds technical debt.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Desktop Environment Dependency</h4>
+      <p>
+        AccountsService is primarily a GNOME component. While it runs on other desktops, it's not
+        universally present. A cross-distro standard needs to work on systems without GNOME
+        infrastructure — headless servers, embedded devices, tiling window manager setups, and
+        non-GNOME desktops.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What to Watch For</h3>
+    <p>
+      Despite the D-Bus proposal going in a different direction, GNOME could independently decide
+      to add age fields to AccountsService. If this happens:
+    </p>
+    <ul style="margin-top:12px; padding-left:24px; line-height:2.2;">
+      <li>Age data would appear in <code>/var/lib/AccountsService/users/<em>USERNAME</em></code></li>
+      <li>The D-Bus interface at <code>org.freedesktop.Accounts</code> would gain age-related properties</li>
+      <li>GNOME Settings and GNOME Initial Setup would likely add age collection UI</li>
+      <li>Applications using AccountsService (most GNOME apps) could query age without additional permissions</li>
+    </ul>
+
+    <div class="card yellow-card" style="margin-top:24px;">
+      <span class="badge badge-yellow">If This Ships</span>
+      <p style="margin-top:8px;">
+        Ageless Linux will provide removal instructions. The fix would involve either deleting the
+        age field from the per-user file, replacing AccountsService with a patched version that
+        omits age support, or masking the relevant D-Bus properties. The specifics depend on how
+        the integration is implemented.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>File Locations</h3>
+    <p>
+      For reference, the AccountsService per-user files live at:
+    </p>
+    <pre>/var/lib/AccountsService/users/USERNAME</pre>
+    <p>A typical file looks like:</p>
+    <pre>[User]
+Language=en_US.UTF-8
+XSession=gnome
+SystemAccount=false</pre>
+    <p>
+      If age fields are added, they would likely appear in this format — a simple key-value pair
+      that can be edited or removed with standard text tools.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

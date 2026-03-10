@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generic Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Generic</h2>
+    <h1>Removing Age Reporting from <em>Any Distro</em></h1>
+    <p>
+      This guide covers the distribution-agnostic approach to removing age reporting
+      infrastructure. It targets the components defined in the freedesktop D-Bus proposal,
+      which is the most likely implementation path regardless of which distro ships first.
+    </p>
+  </div>
+
+  <section>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">Speculative commands</h4>
+      <p>
+        These are speculative commands based on the current D-Bus proposal. Actual paths, service
+        names, and package names will be confirmed when implementations ship. Do not run these
+        commands on a system that doesn't have an age reporting implementation installed &mdash;
+        they won't do anything useful.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>D-Bus Service Removal</h3>
+    <p>
+      If an age reporting implementation uses the proposed
+      <code>org.freedesktop.AgeVerification1</code> bus name, these are the steps to find and
+      remove it.
+    </p>
+
+<pre># Find the service on the system bus
+busctl list | grep -i age
+
+# Stop the service
+sudo systemctl stop age-verification.service
+
+# Mask the systemd unit (prevents restart)
+sudo systemctl mask age-verification.service
+
+# Remove the D-Bus service file
+sudo rm /usr/share/dbus-1/system-services/org.freedesktop.AgeVerification1.service
+
+# Remove the D-Bus policy
+sudo rm /etc/dbus-1/system.d/org.freedesktop.AgeVerification1.conf</pre>
+
+    <p>
+      Masking the unit creates a symlink to <code>/dev/null</code>, which prevents the service
+      from being started by any means &mdash; including socket activation and dependency
+      resolution. Removing the D-Bus service file and policy prevents bus activation.
+    </p>
+  </section>
+
+  <section>
+    <h3>Data Removal</h3>
+    <p>
+      Age data may be stored in a dedicated directory or embedded in existing account data.
+      Check both locations.
+    </p>
+
+<pre># Remove standalone age data (location will vary)
+sudo rm -rf /var/lib/age-verification/
+
+# Check AccountsService for age fields
+grep -r "Age\|DateOfBirth" /var/lib/AccountsService/users/</pre>
+
+    <p>
+      If the grep finds age-related fields in AccountsService user files, you can edit those
+      files directly to remove the offending lines. AccountsService user files are plain-text
+      INI-format files in <code>/var/lib/AccountsService/users/</code>, one per user.
+    </p>
+  </section>
+
+  <section>
+    <h3>Prevention</h3>
+    <p>
+      After removal, prevent the infrastructure from returning. The method depends on your
+      package manager:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">apt (Debian, Ubuntu)</h4>
+<pre>echo "age-verification-package hold" | sudo dpkg --set-selections</pre>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">dnf (Fedora)</h4>
+<pre>sudo dnf versionlock add age-verification-package</pre>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">pacman (Arch)</h4>
+<pre># In /etc/pacman.conf:
+IgnorePkg = age-verification-package</pre>
+    </div>
+  </section>
+
+  <section>
+    <h3>Keep Apps Working After Removal</h3>
+    <p>
+      If applications begin querying <code>org.freedesktop.AgeVerification1</code>, removing the
+      service without a replacement will cause D-Bus errors. The
+      <a href="/short-circuit/">short-circuit section</a> documents a stub daemon that registers
+      the same bus name and returns "unknown" (bracket 0) for all queries. Apps get a valid
+      response. No age data is collected or stored.
+    </p>
+    <p style="margin-top:16px;">
+      <a href="/short-circuit/dbus-stub.html" class="btn btn-primary">D-Bus Stub Daemon</a>
+      <a href="/short-circuit/" class="btn btn-outline" style="margin-left:8px;">Short-Circuit Overview</a>
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

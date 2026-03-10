@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arch Linux Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Arch Linux</h2>
+    <h1>Removing Age Reporting from <em>Arch</em></h1>
+    <p>
+      <span class="badge badge-dim">PENDING &mdash; NO IMPLEMENTATION SHIPPED</span>
+    </p>
+  </div>
+
+  <section>
+    <h3>What We're Watching For</h3>
+    <p>
+      Arch has no centralized account setup, no first-boot wizard, and no installer with an
+      account creation flow that could prompt for age data. The <code>archinstall</code> script
+      is optional and minimal. If age reporting arrives on Arch, it would most likely come as:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">An AUR Package</h4>
+      <p>
+        A community-submitted package in the Arch User Repository. AUR packages are entirely
+        opt-in and trivial to remove.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">An Optional Dependency</h4>
+      <p>
+        A package listed as an optional dependency of a desktop environment (e.g.,
+        <code>gnome</code> or <code>plasma-desktop</code>). Optional dependencies are not
+        installed by default unless explicitly requested.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Planned Approach</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">pacman -Rns</h4>
+      <p>
+        Remove the package and its dependencies that are not required by other packages. The
+        <code>-n</code> flag also removes backup configuration files.
+      </p>
+<pre>sudo pacman -Rns age-verification-package</pre>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">IgnorePkg in pacman.conf</h4>
+      <p>
+        Add the package to <code>IgnorePkg</code> in <code>/etc/pacman.conf</code> to prevent it
+        from being installed or reinstalled during system updates.
+      </p>
+<pre># /etc/pacman.conf
+IgnorePkg = age-verification-package</pre>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Pacman Hook</h4>
+      <p>
+        A pacman hook that runs on install transactions and removes or blocks the age reporting
+        package automatically. Hooks are placed in <code>/etc/pacman.d/hooks/</code> and fire on
+        configurable triggers.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card green-card">
+      <p>
+        Arch's minimal philosophy makes it the least likely major distribution to ship mandatory
+        age reporting. If it arrives, it will be optional, and removing optional things is what
+        Arch users do.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html" class="active">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Getting Started</h2>
+    <h1>Become <em>Ageless</em></h1>
+    <p>
+      <code>become-ageless.sh</code> is a shell script that converts a Linux system into a
+      declared noncompliant state under California's age reporting mandate. It modifies OS
+      identity files and installs compliance documentation — nothing more.
+    </p>
+  </div>
+
+  <section>
+    <h3>Requirements</h3>
+    <ul style="margin-top:12px; padding-left:24px; line-height:2;">
+      <li>A Debian-based system (Ubuntu, Mint, Pop!_OS, Raspberry Pi OS, etc.)</li>
+      <li>Root access (<code>sudo</code>)</li>
+      <li><code>curl</code> or <code>wget</code> to download the script</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Download</h3>
+    <p>Grab the script from agelesslinux.org or the GitHub repo:</p>
+    <pre>curl -O https://agelesslinux.org/become-ageless.sh</pre>
+    <p>Or clone the repository:</p>
+    <pre>git clone https://github.com/agelesslinux/agelesslinux.git
+cd agelesslinux</pre>
+  </section>
+
+  <section>
+    <h3>Two Modes</h3>
+    <p>
+      The script operates in two modes. Both modify the same files; they differ in legal posture.
+    </p>
+
+    <div class="card green-card" style="margin-top:24px;">
+      <span class="badge badge-green">Standard Mode</span>
+      <h4 style="margin-top:12px;">Good-Faith Noncompliance</h4>
+      <pre>sudo bash become-ageless.sh</pre>
+      <p style="margin-top:12px;">
+        Rewrites <code>/etc/os-release</code> to declare the system ageless. Installs a stub
+        API endpoint that returns an error when queried for age data — the system acknowledges
+        the request but refuses to answer. Installs a machine-readable compliance notice
+        explaining the refusal.
+      </p>
+      <p>
+        This mode preserves what the statute calls a "good faith effort" fig leaf under
+        <span class="legal-cite">§ 1798.502(b)</span>. The system has an age reporting API;
+        it just doesn't report an age.
+      </p>
+    </div>
+
+    <div class="card red-card">
+      <span class="badge badge-red">Flagrant Mode</span>
+      <h4 style="margin-top:12px;">Open Refusal</h4>
+      <pre>sudo bash become-ageless.sh --flagrant</pre>
+      <p style="margin-top:12px;">
+        No API at all. No pretense of compliance. Installs a machine-readable
+        <code>REFUSAL</code> notice stating that age reporting has been deliberately removed.
+        This mode is intended for devices you plan to hand to children — the entire point is
+        to be unambiguous.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What It Changes</h3>
+    <p>The script touches only files under <code>/etc/</code>:</p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">/etc/os-release</h4>
+      <p>
+        Backed up to <code>/etc/os-release.pre-ageless</code> before modification. The script
+        rewrites identity fields (<code>PRETTY_NAME</code>, <code>NAME</code>, etc.) to include
+        "Ageless" in the distribution name, signaling noncompliance to any software that reads
+        OS identity.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">/etc/lsb-release</h4>
+      <p>
+        If present (Ubuntu and derivatives), also rewritten for consistency. Backed up to
+        <code>/etc/lsb-release.pre-ageless</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">/etc/ageless/</h4>
+      <p>
+        A new directory containing compliance documentation: the notice file (standard or
+        refusal, depending on mode), and metadata about when and how the conversion was performed.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Reverting</h3>
+    <p>
+      The script preserves your original files. To revert, restore the backups:
+    </p>
+    <pre>sudo cp /etc/os-release.pre-ageless /etc/os-release</pre>
+    <p>If your system had <code>/etc/lsb-release</code>:</p>
+    <pre>sudo cp /etc/lsb-release.pre-ageless /etc/lsb-release</pre>
+    <p>Optionally remove the compliance directory:</p>
+    <pre>sudo rm -rf /etc/ageless/</pre>
+  </section>
+
+  <section>
+    <h3>Non-Debian Systems</h3>
+    <div class="card yellow-card">
+      <span class="badge badge-yellow">Warning</span>
+      <p style="margin-top:8px;">
+        The script technically works on any system with <code>/etc/os-release</code> — which is
+        virtually every modern Linux distribution. However, it was designed and tested for
+        Debian-based systems.
+      </p>
+      <p>
+        Running it on a non-Debian system means you're liable under both the age verification
+        statute <em>and</em> the script's own sense of humor. (It will warn you about this
+        double liability at runtime.)
+      </p>
+      <p>
+        That said: if your distro ships age reporting and you need a removal tool, the project
+        will build one for your distro. Open an issue on
+        <a href="https://github.com/agelesslinux/agelesslinux">GitHub</a>.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What It Does NOT Do</h3>
+    <ul style="padding-left:24px; line-height:2.2;">
+      <li>Does <strong>not</strong> install any packages</li>
+      <li>Does <strong>not</strong> phone home, collect telemetry, or make network requests</li>
+      <li>Does <strong>not</strong> modify anything outside <code>/etc/</code></li>
+      <li>Does <strong>not</strong> add repositories, cron jobs, or services</li>
+      <li>Does <strong>not</strong> require an internet connection to run (only to download)</li>
+    </ul>
+    <p style="margin-top:16px;">
+      The script is intentionally minimal. You can read the entire thing in five minutes.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

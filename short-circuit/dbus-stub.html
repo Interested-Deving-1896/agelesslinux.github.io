@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D-Bus Stub Daemon — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/" class="active">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>D-Bus Stub</h2>
+    <h1>The <em>Ageless</em> Daemon</h1>
+    <p>
+      A minimal D-Bus service that registers the
+      <code>org.freedesktop.AgeVerification1</code> bus name and returns "unknown" for every
+      query. Applications get a valid response. No age data is collected, stored, or transmitted.
+    </p>
+  </div>
+
+  <section>
+    <h3>What It Does</h3>
+    <p>
+      The stub daemon implements the same D-Bus interface that the real age verification service
+      would provide. It exposes three methods:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">GetAgeBracket</h4>
+      <p>
+        Accepts a username, returns <code>0</code> (unknown) for all users. The calling
+        application receives a valid <code>u</code> (uint32) response on the bus &mdash; no error,
+        no timeout, no crash.
+      </p>
+
+      <h4>SetAge</h4>
+      <p>
+        Accepts a username and age in years. Discards both. Returns successfully.
+      </p>
+
+      <h4>SetDateOfBirth</h4>
+      <p>
+        Accepts a username and an ISO 8601 date string. Discards both. Returns successfully.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Why It Works</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Legal</h4>
+      <p>
+        <span class="legal-cite">AB 1043 &sect; 1798.502(b)</span> provides a "good faith" safe
+        harbor. An operating system provider that makes a "good faith effort to comply, considering
+        available technology and reasonable technical limitations" is shielded from liability. A
+        daemon that accepts age input and returns "unknown" is... something. It is a technical
+        implementation of the required interface.
+      </p>
+
+      <h4>Practical</h4>
+      <p>
+        Applications that call <code>GetAgeBracket</code> over D-Bus get a valid response:
+        bracket 0, meaning "unknown." This is a legitimate bracket value in the proposal. The
+        application does not receive a D-Bus error, does not time out waiting for a service that
+        doesn't exist, and does not crash. It receives a well-formed answer that means "this
+        user's age has not been determined."
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Planned Implementation</h3>
+    <p>
+      The following is pseudocode based on the current D-Bus proposal. The actual implementation
+      will be tested against whatever interface ships.
+    </p>
+
+<pre>import dbus
+import dbus.service
+
+class AgelessVerification(dbus.service.Object):
+    @dbus.service.method('org.freedesktop.AgeVerification1',
+                         in_signature='s', out_signature='u')
+    def GetAgeBracket(self, username):
+        return 0  # unknown
+
+    @dbus.service.method('org.freedesktop.AgeVerification1',
+                         in_signature='su')
+    def SetAge(self, username, age_years):
+        pass  # accepted and discarded
+
+    @dbus.service.method('org.freedesktop.AgeVerification1',
+                         in_signature='ss')
+    def SetDateOfBirth(self, username, date_iso8601):
+        pass  # accepted and discarded</pre>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">Pseudocode only</h4>
+      <p>
+        This is pseudocode. The production daemon will be written once a real implementation ships
+        and we can test against its actual D-Bus interface, introspection XML, and bus activation
+        behavior. Method signatures, bus name, and object path may all change.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Installation</h3>
+    <p>
+      The stub daemon will be distributed as two files:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Systemd Service Unit</h4>
+      <p>
+        A drop-in systemd service file that starts the stub daemon on boot. It will be designed to
+        conflict with the real age verification service, so only one can be active at a time.
+      </p>
+
+      <h4>D-Bus Configuration</h4>
+      <p>
+        A D-Bus system bus configuration file that allows the stub daemon to own the
+        <code>org.freedesktop.AgeVerification1</code> bus name and defines the security policy for
+        method calls.
+      </p>
+    </div>
+
+    <p>
+      Installation will be a drop-in replacement: remove the real service, copy two files, reload
+      systemd and dbus, start the stub. One command, if we package it right.
+    </p>
+  </section>
+
+  <section>
+    <h3>The Point</h3>
+    <blockquote>
+      This daemon is to age verification what <code>/dev/null</code> is to storage. It is a
+      perfectly functional interface that discards everything it receives. The law requires an API.
+      Here is an API.
+    </blockquote>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

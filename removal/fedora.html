@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fedora Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Fedora</h2>
+    <h1>Removing Age Reporting from <em>Fedora</em></h1>
+    <p>
+      <span class="badge badge-dim">PENDING &mdash; NO IMPLEMENTATION SHIPPED</span>
+    </p>
+  </div>
+
+  <section>
+    <h3>What We're Watching For</h3>
+    <p>
+      Jef Spaleta suggested that Fedora's age reporting implementation could be as simple as a new
+      file in <code>/etc/</code> populated during account creation. If Fedora ships a more
+      structured implementation, expect either a new systemd service or integration into Anaconda,
+      the Fedora installer.
+    </p>
+    <p>
+      Two implementation scenarios are plausible:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Scenario A: Systemd Service</h4>
+      <p>
+        A new package providing a D-Bus daemon, systemd unit, and data directory &mdash; the same
+        architecture as the freedesktop proposal. This would be the more complex case, requiring
+        package removal, service masking, and data cleanup.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Scenario B: A File in /etc/</h4>
+      <p>
+        If it's just a file &mdash; something like <code>/etc/age-bracket</code> or
+        <code>/etc/user-age.conf</code> populated during account creation &mdash; removal is
+        trivial:
+      </p>
+<pre>sudo rm /etc/age-bracket</pre>
+      <p>
+        One file. One command. Done.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Planned Approach</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Kickstart Snippet</h4>
+      <p>
+        A kickstart directive that prevents the age reporting package from being installed during
+        automated Fedora deployments. Kickstart files are used extensively in enterprise and
+        institutional environments.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">dnf remove</h4>
+      <p>
+        Standard package removal via <code>dnf remove</code>. If the package is a dependency of
+        <code>fedora-release</code> or a desktop group, we'll document the cleanest way to break
+        that dependency without disrupting the rest of the system.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">rpm --setperms</h4>
+      <p>
+        If full package removal is complicated by dependencies, <code>rpm --setperms</code> can
+        lock down data files to prevent them from being read or written, effectively neutralizing
+        the implementation without removing the package.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

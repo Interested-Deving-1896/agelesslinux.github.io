@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Ageless Device — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .spec-grid { display:grid; grid-template-columns:140px 1fr; gap:0; margin:0; }
+    .spec-grid dt { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; color:var(--text-dim); padding:10px 0; border-bottom:1px solid var(--border); }
+    .spec-grid dd { font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-bright); padding:10px 0; border-bottom:1px solid var(--border); margin:0; }
+    .tier-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px; margin-top:24px; }
+    .tier-grid .card h4 { margin-top:0; }
+    .tier-price { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; color:var(--accent); margin-bottom:8px; }
+    .section-links { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; margin-top:24px; }
+    .section-links .card { transition:border-color .2s, transform .2s; }
+    .section-links .card:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .section-links .card h4 { margin-top:0; }
+    .section-links .card p { font-size:14px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/" class="active">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>The Ageless Device</h2>
+    <h1>A $12 <em>Civil Disobedience</em> Computer</h1>
+    <p>
+      The Ageless Device is a physical Linux computer designed to constitute an unambiguous,
+      documented violation of <span class="legal-cite">AB 1043</span>. It runs Debian on a
+      Milk-V Duo S (RISC-V), has a display, keyboard, WiFi, and a curated app store. It costs
+      less than lunch.
+    </p>
+    <p>
+      Full specs and the political argument are on the main site.
+      For the full hardware specification, cost breakdowns, and the legal argument, see the
+      <a href="https://agelesslinux.org/hardware.html">Hardware page on agelesslinux.org</a>.
+    </p>
+  </div>
+
+  <section>
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">PROTOTYPE PHASE</h4>
+      <p>Hardware evaluation in progress, Q1 2026.</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Quick Specs</h3>
+    <div class="card">
+      <dl class="spec-grid">
+        <dt>Platform</dt>
+        <dd>Milk-V Duo S (SG2000 SoC, RISC-V C906 @ 1GHz / ARM Cortex-A53)</dd>
+        <dt>RAM</dt>
+        <dd>512MB DDR3</dd>
+        <dt>WiFi</dt>
+        <dd>802.11ax (WiFi 6) + Bluetooth 5.0</dd>
+        <dt>Display</dt>
+        <dd>SPI TFT (ST7735 160x128 or ST7789V 240x320)</dd>
+        <dt>Input</dt>
+        <dd>USB 2.0 HOST &mdash; standard USB keyboard</dd>
+        <dt>Storage</dt>
+        <dd>MicroSD or 8GB eMMC</dd>
+        <dt>Power</dt>
+        <dd>5V USB-C</dd>
+        <dt>Bonus</dt>
+        <dd>0.5 TOPS INT8 NPU &mdash; this $12 device has an AI accelerator</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    <h3>Three Tiers</h3>
+    <p>
+      The Ageless Device ships in three configurations, all based on the Milk-V Duo S.
+      Full bills of materials are on the
+      <a href="https://agelesslinux.org/hardware.html">hardware page</a>.
+    </p>
+    <div class="tier-grid">
+      <div class="card">
+        <div class="tier-price">$6</div>
+        <h4>The Pamphlet</h4>
+        <p>
+          Bare board, MicroSD, and a printed card. No display, no keyboard. Boots to a serial
+          console. The point is the object itself: a Linux computer that refuses to comply, for
+          the cost of a pamphlet.
+        </p>
+      </div>
+      <div class="card green-card">
+        <div class="tier-price">$12</div>
+        <h4>The Computer</h4>
+        <p>
+          Board + SPI display + MicroSD. Add any USB keyboard. A complete, usable Linux computer
+          with WiFi, a first-boot wizard, and the Ageless app store. This is the reference device.
+        </p>
+      </div>
+      <div class="card">
+        <div class="tier-price">$18</div>
+        <h4>The Appliance</h4>
+        <p>
+          Board + display + eMMC + printed case. Ready to hand to someone. No setup required
+          beyond the first-boot wizard. Intended for distribution at scale.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>In This Section</h3>
+    <div class="section-links">
+      <a href="/device/build-image.html" style="text-decoration:none; color:inherit;">
+        <div class="card">
+          <span class="badge badge-dim">PLANNED</span>
+          <h4 style="margin-top:12px;">Build Image</h4>
+          <p>How to build the Ageless Linux image for the Milk-V Duo S from the duo-buildroot-sdk with an Ageless overlay.</p>
+        </div>
+      </a>
+      <a href="/device/first-boot.html" style="text-decoration:none; color:inherit;">
+        <div class="card">
+          <span class="badge badge-dim">PLANNED</span>
+          <h4 style="margin-top:12px;">First-Boot Wizard</h4>
+          <p>The account setup that asks your name, acknowledges the law, and refuses to collect your age.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
