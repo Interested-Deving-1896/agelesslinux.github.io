@@ -74,14 +74,37 @@
       </div>
     </a>
 
-    <div class="card">
-      <span class="badge badge-dim">Planned</span>
-      <h4 style="margin-top:12px;">Flatpak Portal Override</h4>
+    <a href="/short-circuit/portal-backend.html" style="text-decoration:none; color:inherit;">
+      <div class="card" style="border-color:var(--yellow);">
+        <span class="badge badge-yellow">Proposed</span>
+        <h4 style="margin-top:12px;">xdg-desktop-portal-ageless</h4>
+        <p>
+          <a href="https://github.com/flatpak/xdg-desktop-portal/pull/1922" style="color:var(--cyan);">PR #1922</a>
+          proposes an age range portal for xdg-desktop-portal. If accepted, sandboxed Flatpak and
+          Snap applications would query age data through this interface. The data source is the
+          systemd userdb <code>birthDate</code> field
+          (<a href="https://github.com/systemd/systemd/pull/40954" style="color:var(--cyan);">merged March 18, 2026</a>).
+        </p>
+        <p style="margin-top:8px;">
+          Our response: a custom <code>xdg-desktop-portal-ageless</code> backend that implements
+          only the age verification portal and returns an error for every query. Written in C,
+          compiled at install time, shipped as a single architecture-independent <code>.deb</code>.
+          Replaces the desktop's backend for this single interface without affecting other portal
+          functionality.
+        </p>
+      </div>
+    </a>
+
+    <div class="card green-card">
+      <span class="badge badge-green">Implemented</span>
+      <h4 style="margin-top:12px;">systemd userdb birthDate Neutralization</h4>
       <p>
-        Sandboxed Flatpak applications access system services through xdg-desktop-portal. If a
-        portal for age bracket data is added, we will provide a portal override that blocks access
-        or returns the "unknown" bracket. Flatpak's permission system already supports per-app
-        overrides via <code>flatpak override</code>.
+        systemd PR #40954 (merged March 18, 2026) added a <code>birthDate</code> field to user
+        records &mdash; the data layer feeding the portal API above. <code>become-ageless.sh</code>
+        neutralizes this field for all users: regular mode writes <code>1970-01-01</code> (the
+        epoch), flagrant mode writes <code>null</code>. The <code>--persistent</code> flag installs
+        <code>agelessd</code>, a systemd timer that re-neutralizes every 24 hours. Even if the
+        portal ships, it reads neutralized data.
       </p>
     </div>
 
@@ -129,7 +152,7 @@
 <footer>
   <div class="container">
     Ageless Linux Documentation<br>
-    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
     <div class="legal-footer">
       This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
       SPDX-License-Identifier: Unlicense

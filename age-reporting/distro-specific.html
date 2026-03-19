@@ -33,7 +33,55 @@
       where each stands.
     </p>
     <p style="margin-top:8px;">
-      <span class="badge badge-dim" style="font-size:10px;">Last updated: March 10, 2026</span>
+      <span class="badge badge-dim" style="font-size:10px;">Last updated: March 19, 2026</span>
+    </p>
+  </div>
+
+  <!-- systemd upstream -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">systemd (upstream)</h4>
+      <span class="badge badge-red">Merged</span>
+    </div>
+    <p style="margin-top:12px;">
+      <a href="https://github.com/systemd/systemd/pull/40954" style="color:var(--cyan);">PR #40954</a>
+      was merged on March 18, 2026, adding a <code>birthDate</code> field (YYYY-MM-DD) to systemd's
+      JSON user records. The PR explicitly cites <span class="legal-cite">AB 1043</span>,
+      <span class="legal-cite">CO SB 26-051</span>, and <span class="legal-cite">Lei 15.211</span>
+      as motivation. The field stores exact dates of birth, not brackets. It is readable by any
+      process querying userdb and writable only by administrators via <code>homectl</code>.
+    </p>
+    <p style="margin-top:8px;">
+      This is the data layer for the emerging age verification stack. It coordinates with
+      AccountsService MR #176 and
+      <a href="https://github.com/flatpak/xdg-desktop-portal/pull/1922" style="color:var(--cyan);">xdg-desktop-portal PR #1922</a>.
+      Author: Dylan M. Taylor. Merged by: Luca Boccassi.
+    </p>
+    <p style="margin-top:8px;">
+      Because systemd is the init system on essentially every major Linux distribution, this commit
+      affects the entire ecosystem &mdash; not just distributions that choose to comply.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://github.com/systemd/systemd/pull/40954" style="color:var(--cyan);">github.com/systemd/systemd/pull/40954</a>
+    </p>
+  </div>
+
+  <!-- Freedesktop Proposal Status -->
+  <div class="card yellow-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">freedesktop.org D-Bus Proposal</h4>
+      <span class="badge badge-yellow">Closed</span>
+    </div>
+    <p style="margin-top:12px;">
+      Aaron Rainbolt's merge request to add <code>org.freedesktop.AgeVerification1</code> to the XDG
+      specifications has been <strong>closed</strong>. Community pushback cited reputational risk of
+      associating a core desktop standard with politically sensitive regulation. Rainbolt indicated
+      future work would move into the portal infrastructure used by technologies such as Flatpak.
+      The interface specification itself remains relevant — the question is where it will be hosted,
+      not whether it will be attempted.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://linuxiac.com/xdg-age-verification-interface-proposal-closed/" style="color:var(--cyan);">linuxiac.com</a>
     </p>
   </div>
 
@@ -113,10 +161,16 @@
     <p style="margin-top:12px;">
       Carl Richell (CEO, System76) published a blog post opposing age verification mandates. His
       central argument: the laws are technically ineffective because any child can spin up a virtual
-      machine and set their age to 18. He expressed hope that the laws will be repealed.
+      machine and set their age to 18.
+    </p>
+    <p style="margin-top:8px;">
+      Richell met with Colorado co-author Sen. Matt Ball, who "suggested excluding open source
+      software from the bill." System76 is actively lobbying the Colorado legislature for this
+      exemption. Amendment not yet enacted — can be stripped at any stage.
     </p>
     <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
-      Source: <a href="https://blog.system76.com" style="color:var(--cyan);">blog.system76.com</a>
+      Sources: <a href="https://blog.system76.com/post/system76-on-age-verification/" style="color:var(--cyan);">blog.system76.com</a>,
+      <a href="https://www.phoronix.com/news/Colorado-Maybe-Exclude-OSS" style="color:var(--cyan);">phoronix.com</a>
     </p>
   </div>
 
@@ -234,6 +288,77 @@
     </p>
   </div>
 
+  <!-- Omarchy Linux -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Omarchy Linux</h4>
+      <span class="badge badge-red">Refused</span>
+    </div>
+    <p style="margin-top:12px;">
+      Rejected compliance outright. No plans to implement anything in response to age verification
+      mandates.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://www.pcgamer.com/software/operating-systems/resistance-to-operating-system-age-checks-coming-from-checks-notes-open-source-calculator-and-an-os-that-may-just-exclude-californians-altogether/" style="color:var(--cyan);">pcgamer.com</a>
+    </p>
+  </div>
+
+  <!-- Adenix GNU/Linux -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Adenix GNU/Linux</h4>
+      <span class="badge badge-red">Refused</span>
+    </div>
+    <p style="margin-top:12px;">
+      Declared it will not implement age checks, aligning with a principled stand against such
+      requirements.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://itsfoss.com/news/distros-response-age-verification-laws/" style="color:var(--cyan);">itsfoss.com</a>
+    </p>
+  </div>
+
+  <!-- NixOS -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">NixOS</h4>
+      <span class="badge badge-dim">Silent</span>
+    </div>
+    <p style="margin-top:12px;">
+      No official response. NixOS is a significant distribution with its own research foundation
+      (NixOS Foundation) and a hardware partnership with Framework. Its declarative, reproducible
+      configuration model makes mandatory compliance features structurally awkward &mdash; there is
+      no imperative installer flow to attach an age prompt to.
+    </p>
+    <p style="margin-top:8px;">
+      A legal curiosity: the NixOS website credits copyright to "NixOS Contributors." Under
+      <span class="legal-cite">AB 1043 &sect; 1798.500(g)</span>, every person who "controls the
+      operating system software" is an operating system provider. If copyright is held collectively
+      by all contributors, every one of them is arguably an OS provider subject to the statute.
+    </p>
+  </div>
+
+  <!-- Artix Linux -->
+  <div class="card red-card">
+    <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
+      <h4 style="margin-top:0; font-size:18px;">Artix Linux</h4>
+      <span class="badge badge-red">Refused</span>
+    </div>
+    <p style="margin-top:12px;">
+      Artix developer <strong>nous</strong> stated unambiguously: "We'll NEVER require any
+      verification or identification from the user" (March 7, 2026).
+    </p>
+    <p style="margin-top:8px;">
+      Artix is a systemd-free fork of Arch Linux, which makes it structurally immune to the
+      systemd userdb <code>birthDate</code> field (PR #40954). No systemd means no
+      <code>systemd-userdbd</code>, no <code>homectl</code>, no JSON user records. The entire
+      data layer of the emerging age verification stack does not exist on Artix systems.
+    </p>
+    <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
+      Source: <a href="https://forum.artixlinux.org/index.php/topic,9304.msg55607.html#msg55607" style="color:var(--cyan);">forum.artixlinux.org</a>
+    </p>
+  </div>
+
   <!-- Ageless Linux -->
   <div class="card red-card">
     <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
@@ -275,7 +400,7 @@
 <footer>
   <div class="container">
     Ageless Linux Documentation<br>
-    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
     <div class="legal-footer">
       This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
       SPDX-License-Identifier: Unlicense

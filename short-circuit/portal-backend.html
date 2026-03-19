@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Backend — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/" class="active">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Portal Backend</h2>
+    <h1>xdg-desktop-portal-<em>ageless</em></h1>
+    <p>
+      A custom xdg-desktop-portal backend that claims the age verification interface and returns
+      nothing. Applications get a valid portal response. No age data leaves the system.
+    </p>
+  </div>
+
+  <div class="card yellow-card">
+    <span class="badge badge-yellow">Proposed</span>
+    <p style="margin-top:8px;">
+      This implementation is proposed. It targets
+      <a href="https://github.com/flatpak/xdg-desktop-portal/pull/1922" style="color:var(--cyan);">xdg-desktop-portal PR #1922</a>,
+      which is still in draft. The interface name, method signatures, and portal behavior may all
+      change before this ships. We will build against the final specification.
+    </p>
+  </div>
+
+  <section>
+    <h3>Background</h3>
+    <p>
+      The Linux age verification ecosystem is converging on two layers: a data store (systemd userdb
+      <code>birthDate</code>, <a href="/age-reporting/xdg-portal.html" style="color:var(--cyan);">already merged</a>)
+      and an application API (xdg-desktop-portal, PR #1922). The
+      <a href="/short-circuit/dbus-stub.html" style="color:var(--cyan);">D-Bus stub daemon</a>
+      handles the original <code>org.freedesktop.AgeVerification1</code> interface. But the original
+      proposal author now considers the portal path the realistic one:
+    </p>
+
+    <blockquote>
+      "The original D-Bus API I proposed probably isn't how an age API would be implemented in the
+      future if it ended up happening. [The xdg-desktop-portal PR] has a more realistic API; this
+      is probably the one you'll want to plan on blocking."
+      <span class="cite">&mdash; Aaron Rainbolt, March 2026</span>
+    </blockquote>
+
+    <p style="margin-top:16px;">
+      The portal approach is different from a standalone D-Bus service. xdg-desktop-portal acts as
+      middleware: applications talk to the portal daemon, which routes requests to
+      <strong>backends</strong> provided by the desktop environment. GNOME ships one backend, KDE
+      ships another. Each implements the same portal interfaces using DE-specific tooling.
+    </p>
+    <p>
+      The countermeasure is to ship our own backend.
+    </p>
+  </section>
+
+  <section>
+    <h3>How Portal Backends Work</h3>
+    <p>
+      An xdg-desktop-portal backend is a D-Bus-activated service that implements one or more
+      <code>org.freedesktop.impl.portal.*</code> interfaces. Three files make a backend
+      discoverable:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">1. The Backend Binary</h4>
+      <p>
+        An executable that connects to the session bus, registers a well-known name
+        (e.g., <code>org.freedesktop.impl.portal.desktop.ageless</code>), and handles method calls
+        on one or more portal interfaces. Can be written in any language that speaks D-Bus.
+      </p>
+
+      <h4>2. The Portal File</h4>
+      <p>
+        A <code>.portal</code> file installed to
+        <code>/usr/share/xdg-desktop-portal/portals/</code>. Declares the backend's D-Bus name and
+        which interfaces it implements:
+      </p>
+<pre>[portal]
+DBusName=org.freedesktop.impl.portal.desktop.ageless
+Interfaces=org.freedesktop.impl.portal.ParentalControls</pre>
+      <p style="margin-top:12px;">
+        The interface name above is tentative &mdash; PR #1922's naming is still under debate.
+        Alternatives include <code>AgeRange</code> and <code>AgeSignals</code>.
+      </p>
+
+      <h4>3. The D-Bus Service File</h4>
+      <p>
+        A <code>.service</code> file in <code>/usr/share/dbus-1/services/</code> for D-Bus
+        activation. When the portal daemon needs the backend, D-Bus starts it automatically:
+      </p>
+<pre>[D-BUS Service]
+Name=org.freedesktop.impl.portal.desktop.ageless
+Exec=/usr/libexec/xdg-desktop-portal-ageless</pre>
+    </div>
+
+    <p>
+      Additionally, a portal configuration file in
+      <code>/usr/share/xdg-desktop-portal/</code> can specify which backend handles which
+      interface. This is how we override the desktop's default backend for age verification
+      without affecting file choosers, notifications, or anything else:
+    </p>
+
+<pre># /usr/share/xdg-desktop-portal/ageless-portals.conf
+[preferred]
+org.freedesktop.impl.portal.ParentalControls=ageless</pre>
+  </section>
+
+  <section>
+    <h3>What the Backend Does</h3>
+
+    <div class="card red-card">
+      <h4 style="margin-top:0;">Nothing.</h4>
+      <p>
+        The backend implements the age verification portal interface and returns an error for every
+        query. The portal daemon sees a working backend. Applications see a valid portal response.
+        The response is: "this system does not provide age data."
+      </p>
+    </div>
+
+    <p>
+      PR #1922's proposed interface lets applications submit age thresholds (e.g.,
+      <code>[13, 16, 18]</code>) and receive a bracket response. Our backend would return an
+      error code indicating the operation is not supported, or return a sentinel value (e.g.,
+      <code>[-1, -1]</code>) meaning "no age data available."
+    </p>
+    <p>
+      The exact error code depends on the final portal spec. xdg-desktop-portal backends typically
+      return portal-level errors via the portal response signal, not D-Bus-level errors. We will
+      match whatever convention the spec defines for "backend cannot fulfill this request."
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Scope</h4>
+      <p>
+        The backend implements <strong>only</strong> the age verification interface. It does not
+        replace or interfere with any other portal functionality. File access, screen sharing,
+        notifications, print dialogs &mdash; all continue to be handled by the desktop's own
+        backend (GNOME, KDE, wlroots, etc.).
+      </p>
+      <p style="margin-top:8px;">
+        This is surgical: one interface, one backend, one refusal.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Implementation: C with Install-Time Compilation</h3>
+    <p>
+      Aaron Rainbolt (author of the original D-Bus age verification proposal and contributor to
+      Kicksecure) recommended writing the backend in C and compiling it at package install time.
+      This avoids shipping architecture-specific binaries while keeping a single Debian package.
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">The Pattern</h4>
+      <p>
+        This technique is used in Kicksecure's
+        <a href="https://github.com/ArrayBolt3/security-misc/tree/arraybolt3/trixie" style="color:var(--cyan);">security-misc</a>
+        package for its FileManager1 D-Bus shim. Three components:
+      </p>
+
+      <div style="margin:20px 0; font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+        <div><span style="color:var(--accent);">1.</span> <strong>C source</strong> shipped in
+          <code>/usr/src/xdg-desktop-portal-ageless/</code></div>
+        <div><span style="color:var(--accent);">2.</span> <strong>Build script</strong> in
+          <code>/usr/libexec/xdg-desktop-portal-ageless/build</code> &mdash; calls
+          <code>gcc</code> with hardened flags, links against <code>libdbus-1</code>, outputs the
+          binary to <code>/usr/libexec/</code></div>
+        <div><span style="color:var(--accent);">3.</span> <strong>postinst hook</strong> in the
+          Debian package &mdash; calls the build script during <code>dpkg --configure</code></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Why Build at Install Time?</h4>
+
+      <p>
+        <strong>Architecture independence.</strong> One <code>.deb</code> works on amd64, arm64,
+        riscv64, or any architecture with <code>gcc</code> and the required dev headers. No
+        multi-arch build matrix. No cross-compilation. The user's machine compiles for itself.
+      </p>
+
+      <p style="margin-top:12px;">
+        <strong>Auditability.</strong> The source is right there in <code>/usr/src/</code>. Anyone
+        can read what the backend does (nothing), verify it does nothing, and rebuild it.
+      </p>
+
+      <p style="margin-top:12px;">
+        <strong>Hardened by default.</strong> The build script applies full compiler hardening:
+        <code>-fstack-protector-all</code>, <code>-fstack-clash-protection</code>,
+        <code>_FORTIFY_SOURCE=3</code>, <code>-pie</code>, <code>-Wl,-z,relro</code>,
+        <code>-Wl,-z,now</code>, and architecture-specific mitigations (CFI on x86_64, BTI on
+        aarch64). A program that does nothing should still be built as if it does everything.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Build Dependencies</h4>
+      <p>
+        The package will require at install time:
+      </p>
+<pre>gcc
+pkg-config
+libdbus-1-dev</pre>
+      <p style="margin-top:12px;">
+        These are standard development packages available on every Debian-based distribution.
+        <code>become-ageless.sh</code> will handle installing them as part of the conversion
+        process.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Skeleton</h3>
+    <p>
+      The following is a structural outline of the backend. This is not final code &mdash; the
+      portal interface does not exist yet. It shows the shape of the implementation: connect to the
+      session bus, claim the backend name, handle the age portal method, return nothing.
+    </p>
+
+<pre>#include &lt;dbus/dbus.h&gt;
+
+/*
+ * xdg-desktop-portal-ageless
+ *
+ * Implements org.freedesktop.impl.portal.ParentalControls
+ * (or whatever PR #1922 names it).
+ *
+ * Every method call returns an error or sentinel indicating
+ * "no age data available." No data is collected, stored, or
+ * transmitted.
+ */
+
+static const char *BUS_NAME =
+  "org.freedesktop.impl.portal.desktop.ageless";
+static const char *IFACE =
+  "org.freedesktop.impl.portal.ParentalControls";
+
+/* ... D-Bus connection setup, name acquisition ... */
+
+void handle_get_age_range(DBusMessage *msg, DBusConnection *conn) {
+  /*
+   * The PR proposes: app sends age gates [int],
+   * backend responds with [lower, upper] bracket.
+   *
+   * We respond with an error indicating the operation
+   * is not supported, or [-1, -1] (no data), depending
+   * on the final spec.
+   */
+  DBusMessage *reply = dbus_message_new_error(msg,
+    "org.freedesktop.portal.Error.NotAllowed",
+    "Age verification is not available on this system.");
+  dbus_connection_send(conn, reply, NULL);
+  dbus_connection_flush(conn);
+  dbus_message_unref(reply);
+}
+
+/* ... main loop: pop messages, dispatch to handler ... */</pre>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">This will change</h4>
+      <p>
+        The error name, the interface name, the method signature, the response format &mdash;
+        all depend on the final portal specification. This skeleton shows intent and architecture,
+        not a shippable implementation. We will build the real thing when there is a real
+        specification to build against.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Defense in Depth</h3>
+    <p>
+      The portal backend is one layer in a stack of countermeasures. Even without it, Ageless Linux
+      systems are protected:
+    </p>
+
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+        <div><span style="color:var(--green);">&#x2713;</span> <strong>Data layer</strong>
+          &mdash; <code>become-ageless.sh</code> neutralizes the systemd userdb
+          <code>birthDate</code> field. The portal backend reads epoch dates or null.</div>
+        <div><span style="color:var(--green);">&#x2713;</span> <strong>Persistence</strong>
+          &mdash; <code>agelessd</code> timer re-neutralizes every 24 hours, surviving manual
+          or automated attempts to set a birth date.</div>
+        <div><span style="color:var(--accent);">&#x25CB;</span> <strong>Portal layer</strong>
+          &mdash; <code>xdg-desktop-portal-ageless</code> intercepts age queries at the API
+          level before they reach any data store. <em>(This page. Proposed.)</em></div>
+        <div><span style="color:var(--green);">&#x2713;</span> <strong>D-Bus layer</strong>
+          &mdash; The <a href="/short-circuit/dbus-stub.html" style="color:var(--cyan);">stub daemon</a>
+          handles the original <code>org.freedesktop.AgeVerification1</code> interface for
+          non-sandboxed applications.</div>
+      </div>
+    </div>
+
+    <p>
+      An application querying age data on an Ageless Linux system hits at minimum two barriers:
+      the portal returns an error (or the stub returns "unknown"), and even if it somehow bypasses
+      the API layer and reads userdb directly, the data is neutralized.
+    </p>
+  </section>
+
+  <section>
+    <h3>Package Structure</h3>
+    <p>
+      The <code>xdg-desktop-portal-ageless</code> package will ship the following files:
+    </p>
+
+    <div class="card">
+<pre style="margin:0; border:0; padding:0; background:transparent;">xdg-desktop-portal-ageless/
+  usr/
+    src/xdg-desktop-portal-ageless/
+      portal-ageless.c              # backend source
+    libexec/xdg-desktop-portal-ageless/
+      build                         # gcc invocation with hardened flags
+    share/
+      xdg-desktop-portal/
+        portals/ageless.portal      # portal registration
+        ageless-portals.conf        # interface-to-backend mapping
+      dbus-1/services/
+        org.freedesktop.impl.portal.desktop.ageless.service
+  debian/
+    control                         # Depends: gcc, pkg-config, libdbus-1-dev
+    postinst                        # calls build script
+    postrm                          # removes compiled binary</pre>
+    </div>
+  </section>
+
+  <section>
+    <h3>Timeline</h3>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+      <div><span class="badge badge-red" style="font-size:10px; padding:2px 8px; vertical-align:middle;">done</span>
+        systemd <code>birthDate</code> merged (March 18, 2026). Data layer exists.</div>
+      <div><span class="badge badge-yellow" style="font-size:10px; padding:2px 8px; vertical-align:middle;">now</span>
+        PR #1922 in draft, locked. Waiting for resolution.</div>
+      <div><span class="badge badge-dim" style="font-size:10px; padding:2px 8px; vertical-align:middle;">next</span>
+        PR #1922 is accepted or a desktop ships a backend. We build against it.</div>
+      <div><span class="badge badge-dim" style="font-size:10px; padding:2px 8px; vertical-align:middle;">then</span>
+        <code>xdg-desktop-portal-ageless</code> ships as a <code>.deb</code> and is integrated
+        into <code>become-ageless.sh</code>.</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Credit</h3>
+    <p>
+      The portal backend approach and the install-time compilation pattern were recommended by
+      <strong>Aaron Rainbolt</strong> (arraybolt3), author of the original
+      <code>org.freedesktop.AgeVerification1</code> D-Bus proposal and contributor to
+      Kicksecure/Whonix. The build pattern is based on Kicksecure's
+      <a href="https://github.com/ArrayBolt3/security-misc/tree/arraybolt3/trixie" style="color:var(--cyan);">security-misc</a>
+      FileManager1 shim.
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

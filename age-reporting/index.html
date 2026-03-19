@@ -31,9 +31,10 @@
     <p>
       California's <span class="legal-cite">AB 1043</span> and similar state laws require operating
       system providers to collect age data from users and expose it to applications via API. No Linux
-      distribution has shipped a compliance mechanism yet, but several proposals are under active
-      discussion. This section documents what's being proposed so we can build removal tools the
-      moment implementations ship.
+      distribution has shipped an application-facing compliance mechanism yet, but the infrastructure
+      is forming: systemd merged a <code>birthDate</code> field into user records on March 18, 2026,
+      and an xdg-desktop-portal PR defines the API layer. This section documents what's being built
+      so we can build removal tools to match.
     </p>
   </div>
 
@@ -128,13 +129,14 @@
     </a>
 
     <a href="/age-reporting/xdg-portal.html" style="text-decoration:none; color:inherit;">
-      <div class="card">
-        <span class="badge badge-dim">Suggested</span>
-        <h4 style="margin-top:12px;">xdg-desktop-portal</h4>
+      <div class="card yellow-card">
+        <span class="badge badge-yellow">Active PR + Merged Data Layer</span>
+        <h4 style="margin-top:12px;">xdg-desktop-portal + systemd userdb</h4>
         <p>
-          David Edmundson suggested routing age data through xdg-desktop-portal, which already
-          handles permission-gated data access for sandboxed apps (Flatpak, Snap). Rainbolt
-          rejected this approach on data minimization grounds.
+          The emerging stack: systemd PR #40954 (merged March 18, 2026) adds a <code>birthDate</code>
+          field to user records. xdg-desktop-portal PR #1922 (open) defines the application-facing
+          age range API. The original D-Bus proposal author now recommends this path. Ageless Linux
+          already neutralizes the data layer; the API layer is being monitored.
         </p>
       </div>
     </a>
@@ -157,7 +159,7 @@
 <footer>
   <div class="container">
     Ageless Linux Documentation<br>
-    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
     <div class="legal-footer">
       This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
       SPDX-License-Identifier: Unlicense

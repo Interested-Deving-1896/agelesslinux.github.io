@@ -87,6 +87,19 @@ cd agelesslinux</pre>
         to be unambiguous.
       </p>
     </div>
+
+    <div class="card" style="border-color:var(--cyan); margin-top:24px;">
+      <span class="badge badge-blue">Optional Flag</span>
+      <h4 style="margin-top:12px;">Persistent Mode</h4>
+      <pre>sudo bash become-ageless.sh --persistent
+sudo bash become-ageless.sh --flagrant --persistent</pre>
+      <p style="margin-top:12px;">
+        Can be combined with either mode. In addition to the one-time conversion, installs
+        <code>agelessd</code> — a systemd timer that re-neutralizes systemd userdb
+        <code>birthDate</code> fields every 24 hours. This guards against package updates,
+        user creation, or desktop tools that may attempt to populate age data in the future.
+      </p>
+    </div>
   </section>
 
   <section>
@@ -116,6 +129,27 @@ cd agelesslinux</pre>
       <p>
         A new directory containing compliance documentation: the notice file (standard or
         refusal, depending on mode), and metadata about when and how the conversion was performed.
+      </p>
+    </div>
+
+    <div class="card" style="border-color:var(--red);">
+      <h4 style="margin-top:0;">/etc/userdb/*.user</h4>
+      <p>
+        Drop-in records for systemd userdb that neutralize the <code>birthDate</code> field
+        (added in <a href="https://github.com/systemd/systemd/pull/40954" style="color:var(--cyan);">systemd PR #40954</a>,
+        merged March 18, 2026). Regular mode sets all users to <code>1970-01-01</code>; flagrant
+        mode sets it to <code>null</code>. Each record includes full passwd fields (uid, gid,
+        home, shell) to avoid shadowing NSS resolution.
+      </p>
+    </div>
+
+    <div class="card" style="border-color:var(--cyan);">
+      <h4 style="margin-top:0;">/etc/ageless/agelessd <span class="badge badge-blue" style="font-size:10px; margin-left:8px;">--persistent only</span></h4>
+      <p>
+        If <code>--persistent</code> is passed, installs <code>agelessd</code> and a systemd
+        timer (<code>agelessd.timer</code>, <code>agelessd.service</code>) that re-neutralizes
+        userdb birthDate fields every 24 hours and on boot. This is the only flag that installs
+        a systemd service.
       </p>
     </div>
   </section>
@@ -159,8 +193,10 @@ cd agelesslinux</pre>
     <ul style="padding-left:24px; line-height:2.2;">
       <li>Does <strong>not</strong> install any packages</li>
       <li>Does <strong>not</strong> phone home, collect telemetry, or make network requests</li>
-      <li>Does <strong>not</strong> modify anything outside <code>/etc/</code></li>
-      <li>Does <strong>not</strong> add repositories, cron jobs, or services</li>
+      <li>Does <strong>not</strong> modify anything outside <code>/etc/</code> (except systemd unit
+        files in <code>/etc/systemd/system/</code> when <code>--persistent</code> is used)</li>
+      <li>Does <strong>not</strong> add repositories or cron jobs (the <code>--persistent</code> flag
+        adds a systemd timer — this is the only service the script creates)</li>
       <li>Does <strong>not</strong> require an internet connection to run (only to download)</li>
     </ul>
     <p style="margin-top:16px;">
@@ -173,7 +209,7 @@ cd agelesslinux</pre>
 <footer>
   <div class="container">
     Ageless Linux Documentation<br>
-    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a><br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
     <div class="legal-footer">
       This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
       SPDX-License-Identifier: Unlicense
