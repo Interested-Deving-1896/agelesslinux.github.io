@@ -102,22 +102,30 @@
   <section>
     <h3>Current Status</h3>
     <div class="card yellow-card">
-      <h4 style="margin-top:0;">No distro has shipped age reporting compliance yet.</h4>
+      <h4 style="margin-top:0;">No Linux distro has shipped &mdash; but a BSD has.</h4>
       <p>
         California's <span class="legal-cite">AB 1043</span> requires operating system distributors
-        to collect user age information, but no Linux distribution has implemented a compliance
-        mechanism as of this writing. The leading candidate is a
-        <strong>freedesktop.org D-Bus interface proposal</strong> that would expose an age-bracket
-        property through AccountsService, allowing applications to query a user's reported age
-        group.
+        to collect user age information. No Linux distribution has implemented a compliance
+        mechanism as of this writing. The leading Linux candidate is an
+        <strong>xdg-desktop-portal age range API</strong> backed by systemd's merged
+        <code>birthDate</code> field.
       </p>
       <p>
-        Until implementations ship, <code>become-ageless.sh</code> modifies OS identity strings
-        as a preemptive statement of noncompliance. When distros begin adding age collection,
-        the project will provide targeted removal tools for each distribution.
+        Outside of Linux, <strong>MidnightBSD</strong> merged the
+        <a href="/age-reporting/aged.html">aged(8) daemon</a> on March 9, 2026 &mdash; the first
+        operating system to ship a native age verification implementation. It includes a Unix daemon,
+        a C library, a CLI tool, and age-based Unix groups for package gating. It is enabled by
+        default. Ageless Linux provides the first
+        <a href="/removal/midnightbsd.html">non-speculative removal guide</a> targeting this system.
+      </p>
+      <p>
+        For Linux, <code>become-ageless.sh</code> modifies OS identity strings and neutralizes the
+        systemd <code>birthDate</code> field as a preemptive statement of noncompliance. When Linux
+        distros begin adding age collection, the project will provide targeted removal tools for each.
       </p>
       <p style="margin-top:16px;">
-        <a href="/age-reporting/" class="btn btn-outline">Track the D-Bus Proposal</a>
+        <a href="/age-reporting/" class="btn btn-outline">Track Implementations</a>
+        <a href="/removal/midnightbsd.html" class="btn btn-outline" style="margin-left:8px;">MidnightBSD Removal</a>
         <a href="https://agelesslinux.org/map.html" class="btn btn-outline" style="margin-left:8px;">View State Law Map</a>
       </p>
     </div>

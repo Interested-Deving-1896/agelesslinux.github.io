@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MidnightBSD Removal Guide — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/" class="active">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>MidnightBSD</h2>
+    <h1>Removing <em>aged</em> from MidnightBSD</h1>
+    <p>
+      The first non-speculative removal guide on this site. MidnightBSD's aged daemon is real,
+      merged, and enabled by default. These are tested removal steps, not hypothetical commands
+      against a proposal.
+    </p>
+  </div>
+
+  <div class="card red-card">
+    <span class="badge badge-red">Real Commands</span>
+    <p style="margin-top:8px;">
+      Unlike every other removal guide on this site, these commands target software that actually
+      exists on a shipping operating system. The aged daemon
+      (<a href="https://github.com/MidnightBSD/src/pull/302" style="color:var(--cyan);">PR #302</a>)
+      was merged on March 9, 2026 and is enabled by default in MidnightBSD.
+    </p>
+  </div>
+
+  <section>
+    <h3>What You're Removing</h3>
+    <p>
+      The complete aged subsystem consists of four components:
+    </p>
+
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+        <div><span style="color:var(--red);">1.</span> <strong>aged(8) daemon</strong> &mdash;
+          <code>/usr/sbin/aged</code>, SQLite database at <code>/var/db/aged/aged.db</code>,
+          socket at <code>/var/run/aged/aged.sock</code></div>
+        <div><span style="color:var(--red);">2.</span> <strong>agectl(8) CLI</strong> &mdash;
+          <code>/usr/sbin/agectl</code></div>
+        <div><span style="color:var(--red);">3.</span> <strong>agev(3) library</strong> &mdash;
+          Functions in libutil (<code>agev_get_age_bracket</code>, <code>agev_set_age</code>,
+          <code>agev_set_dob</code>)</div>
+        <div><span style="color:var(--red);">4.</span> <strong>Age groups</strong> &mdash;
+          <code>age4p</code> (GID 856), <code>age13p</code> (GID 857),
+          <code>age16p</code> (GID 858), <code>age18p</code> (GID 859)</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Step 1: Disable the Daemon</h3>
+    <p>
+      The aged daemon is enabled by default via <code>rc.conf</code>. Disable it and stop the
+      running instance:
+    </p>
+
+<pre># Disable aged from starting at boot
+sysrc aged_enable="NO"
+
+# Stop the running daemon
+service aged stop</pre>
+
+    <p>
+      <code>sysrc</code> writes to <code>/etc/rc.conf</code>. You can also edit the file directly
+      and change <code>aged_enable="YES"</code> to <code>aged_enable="NO"</code>.
+    </p>
+  </section>
+
+  <section>
+    <h3>Step 2: Remove the Database</h3>
+    <p>
+      The SQLite database stores all age data for all users on the system. Delete it:
+    </p>
+
+<pre># Remove the age database
+rm /var/db/aged/aged.db</pre>
+
+    <p>
+      This permanently destroys all stored age and date-of-birth records. There is no recovery
+      without a backup.
+    </p>
+  </section>
+
+  <section>
+    <h3>Step 3: Verify Socket Removal</h3>
+    <p>
+      The daemon's Unix domain socket should be removed automatically when the service stops. Verify:
+    </p>
+
+<pre># Confirm the socket is gone
+ls -la /var/run/aged/aged.sock</pre>
+
+    <p>
+      If the socket still exists after stopping the service, remove it manually:
+    </p>
+
+<pre>rm /var/run/aged/aged.sock</pre>
+  </section>
+
+  <section>
+    <h3>Step 4: Remove Age Group Memberships</h3>
+    <p>
+      PR #317 introduced four Unix groups that the daemon uses for package-level enforcement.
+      Remove all users from these groups:
+    </p>
+
+<pre># List members of each age group
+pw groupshow age4p
+pw groupshow age13p
+pw groupshow age16p
+pw groupshow age18p
+
+# Remove a specific user from all age groups
+pw groupmod age4p -d USERNAME
+pw groupmod age13p -d USERNAME
+pw groupmod age16p -d USERNAME
+pw groupmod age18p -d USERNAME</pre>
+
+    <p>
+      Repeat the <code>pw groupmod -d</code> commands for every user listed in the group membership
+      output. Alternatively, to remove the groups entirely:
+    </p>
+
+<pre># Remove the age groups from the system (optional)
+pw groupdel age4p
+pw groupdel age13p
+pw groupdel age16p
+pw groupdel age18p</pre>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">mport dependency</h4>
+      <p>
+        If the mport package manager has been updated to check age group membership, deleting the
+        groups may cause mport to refuse to install age-gated packages. If you want those packages
+        to install regardless, you may prefer to keep the groups but add all users to all four of
+        them.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Step 5: Verify</h3>
+    <p>
+      Confirm the removal is complete:
+    </p>
+
+<pre># Daemon should not be running
+ps aux | grep aged
+
+# Socket should not exist
+ls /var/run/aged/
+
+# Database should not exist
+ls /var/db/aged/
+
+# rc.conf should show NO
+sysrc aged_enable</pre>
+
+    <p>
+      Expected output: no aged process, no socket file, no database file,
+      <code>aged_enable: NO</code>.
+    </p>
+  </section>
+
+  <section>
+    <h3>Limitations</h3>
+
+    <div class="card">
+      <h4 style="margin-top:0;">become-ageless.sh does not support BSD</h4>
+      <p>
+        The Ageless Linux conversion script targets Debian-based Linux systems. It uses
+        <code>apt</code>, <code>systemctl</code>, and <code>os-release</code> &mdash; none of
+        which exist on MidnightBSD. The steps above are manual. A BSD-targeted script may be
+        developed if demand warrants it.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">agev(3) remains in libutil</h4>
+      <p>
+        The <code>agev_get_age_bracket()</code>, <code>agev_set_age()</code>, and
+        <code>agev_set_dob()</code> functions are compiled into libutil. Removing them requires
+        recompiling the base system. Disabling the daemon is sufficient to make these functions
+        non-functional &mdash; they will fail to connect to the socket and return errors.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Alternative: Short-Circuit</h3>
+    <p>
+      If you prefer to keep the daemon's socket active (so applications that query it do not receive
+      connection errors), see the short-circuit guide:
+    </p>
+    <p style="margin-top:16px;">
+      <a href="/short-circuit/aged-stub.html" class="btn btn-primary">aged Stub Guide</a>
+      <a href="/age-reporting/aged.html" class="btn btn-outline" style="margin-left:8px;">aged Technical Docs</a>
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

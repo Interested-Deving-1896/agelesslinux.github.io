@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>aged Stub — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/" class="active">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>aged Stub</h2>
+    <h1>Short-Circuiting <em>aged(8)</em></h1>
+    <p>
+      How to replace MidnightBSD's aged daemon with a stub that always returns "unknown" &mdash;
+      keeping the socket active and the agev(3) library functional while reporting no age data for
+      any user.
+    </p>
+  </div>
+
+  <section>
+    <h3>Why Short-Circuit Instead of Remove</h3>
+    <p>
+      The <a href="/removal/midnightbsd.html">removal guide</a> disables the daemon and deletes
+      the database. This is clean and thorough, but it has a consequence: any application that calls
+      <code>agev_get_age_bracket()</code> or connects to <code>/var/run/aged/aged.sock</code> will
+      receive a connection error instead of a response.
+    </p>
+    <p>
+      If MidnightBSD's mport package manager or other system tools begin querying the aged socket
+      as part of normal operation, a missing daemon may cause errors, warnings, or refused
+      operations. The short-circuit approach avoids this: the socket exists, the protocol is
+      honored, and every query receives a valid response meaning "age unknown."
+    </p>
+  </section>
+
+  <section>
+    <h3>Approach 1: Socket-Level Stub</h3>
+    <p>
+      Replace the aged daemon with a minimal listener that accepts connections on the same socket
+      and always responds with <code>-1,-1</code> (unknown).
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Using socat</h4>
+      <p>
+        The simplest approach uses <code>socat</code> to listen on the Unix socket and return the
+        "unknown" response to every connection:
+      </p>
+<pre># Stop the real daemon
+service aged stop
+sysrc aged_enable="NO"
+
+# Start a stub listener
+socat UNIX-LISTEN:/var/run/aged/aged.sock,fork \
+  EXEC:'echo "-1,-1"'</pre>
+
+      <p style="margin-top:12px;">
+        This is suitable for testing. For a persistent setup, wrap it in an rc script (see below).
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">As an rc Service</h4>
+      <p>
+        Create <code>/usr/local/etc/rc.d/aged_stub</code>:
+      </p>
+<pre>#!/bin/sh
+#
+# PROVIDE: aged_stub
+# REQUIRE: DAEMON
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="aged_stub"
+rcvar="aged_stub_enable"
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+pidfile="/var/run/aged/aged_stub.pid"
+
+aged_stub_start() {
+    mkdir -p /var/run/aged
+    /usr/bin/daemon -p ${pidfile} \
+        /usr/local/bin/socat \
+        UNIX-LISTEN:/var/run/aged/aged.sock,fork \
+        EXEC:'echo "-1,-1"'
+}
+
+aged_stub_stop() {
+    if [ -f ${pidfile} ]; then
+        kill $(cat ${pidfile})
+        rm -f ${pidfile}
+        rm -f /var/run/aged/aged.sock
+    fi
+}
+
+load_rc_config $name
+run_rc_command "$1"</pre>
+
+      <p style="margin-top:12px;">
+        Enable it:
+      </p>
+<pre>chmod +x /usr/local/etc/rc.d/aged_stub
+sysrc aged_stub_enable="YES"
+service aged_stub start</pre>
+    </div>
+
+    <div class="card yellow-card">
+      <h4 style="margin-top:0;">Ensure aged is disabled</h4>
+      <p>
+        The real daemon and the stub cannot both bind to
+        <code>/var/run/aged/aged.sock</code>. Disable aged before starting the stub:
+      </p>
+<pre>sysrc aged_enable="NO"
+service aged stop</pre>
+    </div>
+  </section>
+
+  <section>
+    <h3>Approach 2: Library-Level Shim</h3>
+    <p>
+      Intercept the agev(3) library calls with <code>LD_PRELOAD</code> so applications never
+      reach the socket at all. This works regardless of whether the daemon is running.
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">The Shim</h4>
+      <p>
+        Create <code>agev_shim.c</code>:
+      </p>
+<pre>#include &lt;sys/types.h&gt;
+
+int agev_get_age_bracket(uid_t uid, int *lower, int *upper) {
+    *lower = -1;
+    *upper = -1;
+    return 0;
+}
+
+int agev_set_age(uid_t uid, int age) {
+    return 0;
+}
+
+int agev_set_dob(uid_t uid, const char *dob) {
+    return 0;
+}</pre>
+
+      <p style="margin-top:12px;">
+        Compile and install:
+      </p>
+<pre>cc -shared -fPIC -o /usr/local/lib/agev_shim.so agev_shim.c</pre>
+
+      <p style="margin-top:12px;">
+        Use for a single application:
+      </p>
+<pre>LD_PRELOAD=/usr/local/lib/agev_shim.so some_application</pre>
+
+      <p style="margin-top:12px;">
+        Use system-wide by setting <code>LD_PRELOAD</code> in the login environment:
+      </p>
+<pre># Add to /etc/profile (sh/bash) or /etc/csh.login (csh/tcsh):
+export LD_PRELOAD=/usr/local/lib/agev_shim.so</pre>
+    </div>
+
+    <p>
+      The library shim is the most thorough approach. Applications receive valid "unknown" responses
+      without any network call. The daemon can be completely removed (per the
+      <a href="/removal/midnightbsd.html">removal guide</a>) and the shim handles any residual
+      library calls.
+    </p>
+  </section>
+
+  <section>
+    <h3>Approach 3: rc.conf Swap</h3>
+    <p>
+      The simplest method: disable the real daemon, optionally run the socket stub. No library
+      interposition, no recompilation:
+    </p>
+
+<pre># Disable the real daemon
+sysrc aged_enable="NO"
+
+# Optionally enable the stub (Approach 1)
+sysrc aged_stub_enable="YES"
+
+# Reboot or restart services
+service aged stop
+service aged_stub start</pre>
+
+    <p>
+      This is appropriate if no applications on your system call <code>agev_get_age_bracket()</code>
+      directly. The socket stub handles anything that connects to the Unix socket. Applications that
+      use the C library will get connection errors (or shim results if you combine with Approach 2).
+    </p>
+  </section>
+
+  <section>
+    <h3>Which Approach to Use</h3>
+
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+        <div><span style="color:var(--green);">Socket stub</span> &mdash;
+          Use when applications connect to the aged socket directly. Handles the daemon protocol.
+          Simple to deploy. Requires socat.</div>
+        <div><span style="color:var(--green);">Library shim</span> &mdash;
+          Use when applications call agev(3) functions. Intercepts at the library level before any
+          socket connection. Most thorough. Works even with the daemon fully removed.</div>
+        <div><span style="color:var(--green);">Both</span> &mdash;
+          Use both for complete coverage. The library shim handles compiled applications; the socket
+          stub handles anything that opens the socket directly (scripts, tools, custom code).</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>The Point</h3>
+    <blockquote>
+      The aged daemon asks a question. The stub answers: "I don't know." Every time, for every
+      user. The socket is live, the protocol is honored, the answer is nothing.
+    </blockquote>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

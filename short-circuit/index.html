@@ -45,11 +45,15 @@
 
   <section>
     <div class="card yellow-card">
-      <h4 style="margin-top:0;">No applications currently request age bracket signals</h4>
+      <h4 style="margin-top:0;">Linux stubs are preemptive &mdash; the BSD stub is not</h4>
       <p>
-        As of March 2026, no Linux distribution has shipped an age reporting implementation, and
-        no application queries the <code>org.freedesktop.AgeVerification1</code> interface. When
-        implementations ship and applications begin requesting age data, these stubs will be ready.
+        No Linux distribution has shipped an age reporting implementation, and no Linux application
+        queries the <code>org.freedesktop.AgeVerification1</code> interface yet. The Linux stubs
+        below are ready for when they do. The one exception: MidnightBSD's
+        <a href="/age-reporting/aged.html" style="color:var(--cyan);">aged(8) daemon</a> is real,
+        shipped, and enabled by default. The
+        <a href="/short-circuit/aged-stub.html" style="color:var(--cyan);">aged stub</a> targets a
+        live system.
       </p>
     </div>
   </section>
@@ -107,6 +111,20 @@
         portal ships, it reads neutralized data.
       </p>
     </div>
+
+    <a href="/short-circuit/aged-stub.html" style="text-decoration:none; color:inherit;">
+      <div class="card red-card">
+        <span class="badge badge-red">Live Target</span>
+        <h4 style="margin-top:12px;">MidnightBSD aged(8) Stub</h4>
+        <p>
+          MidnightBSD's <a href="/age-reporting/aged.html" style="color:var(--cyan);">aged daemon</a>
+          is the first shipped age verification implementation. The stub replaces it with a socket
+          listener that returns <code>-1,-1</code> (unknown) for all queries, plus an optional
+          <code>LD_PRELOAD</code> shim for the agev(3) C library. Unlike the Linux stubs above, this
+          targets a real, running system.
+        </p>
+      </div>
+    </a>
 
     <div class="card">
       <span class="badge badge-dim">Planned</span>

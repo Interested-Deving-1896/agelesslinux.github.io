@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MidnightBSD aged(8) Daemon — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>MidnightBSD</h2>
+    <h1>The <em>aged(8)</em> Daemon</h1>
+    <p>
+      MidnightBSD merged a complete age verification subsystem on March 9, 2026
+      (<a href="https://github.com/MidnightBSD/src/pull/302" style="color:var(--cyan);">PR #302</a>),
+      with additional components through March 26. It is the first operating system to ship a
+      native age reporting implementation. The system consists of a daemon, a CLI tool, a C library,
+      and a set of Unix groups for package-level enforcement.
+    </p>
+  </div>
+
+  <div class="card red-card">
+    <span class="badge badge-red">Shipped</span>
+    <p style="margin-top:8px;">
+      This is not a proposal, not a PR under review, not a mailing list thread. MidnightBSD has
+      merged and shipped a working age verification daemon. It is enabled by default.
+    </p>
+  </div>
+
+  <section>
+    <h3>Architecture Overview</h3>
+    <p>
+      The aged subsystem takes a fundamentally different approach from the Linux ecosystem's
+      D-Bus/portal/systemd stack. There is no D-Bus. There is no systemd. There are no portals.
+      This is a traditional Unix daemon with a Unix domain socket, a C library in libutil, and
+      group-based access control &mdash; the BSD way.
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">aged(8) &mdash; The Daemon</h4>
+      <p>
+        A privileged daemon that manages age data for all users on the system. Stores records in a
+        SQLite database at <code>/var/db/aged/aged.db</code>. Listens on a Unix domain socket at
+        <code>/var/run/aged/aged.sock</code>. Starts before LOGIN in the boot sequence. Drops
+        privileges to a dedicated <code>aged</code> user (UID 866) after binding the socket.
+      </p>
+      <p style="margin-top:8px;">
+        Enabled by default: <code>aged_enable="YES"</code> is set in <code>rc.conf</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">agectl(8) &mdash; The CLI</h4>
+      <p>
+        Command-line interface for interacting with the daemon. Any user can query their own age
+        bracket. Root can set age or date of birth for any user and manage age group memberships.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">agev(3) &mdash; The Library</h4>
+      <p>
+        Three C functions added to libutil, available to any application compiled against MidnightBSD:
+        <code>agev_get_age_bracket()</code>, <code>agev_set_age()</code>, and
+        <code>agev_set_dob()</code>. This is the application-facing API &mdash; the equivalent of
+        what the Linux ecosystem is trying to build with xdg-desktop-portal.
+      </p>
+      <p style="margin-top:8px;">
+        Introduced in <a href="https://github.com/MidnightBSD/src/pull/310" style="color:var(--cyan);">PR #310</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Age Groups &mdash; Unix Group Enforcement</h4>
+      <p>
+        Four Unix groups for age-based access control, used by MidnightBSD's mport package manager
+        to gate package installation:
+      </p>
+      <ul style="margin-top:8px; padding-left:24px; line-height:2;">
+        <li><code>age4p</code> (GID 856) &mdash; users aged 4 and older</li>
+        <li><code>age13p</code> (GID 857) &mdash; users aged 13 and older</li>
+        <li><code>age16p</code> (GID 858) &mdash; users aged 16 and older</li>
+        <li><code>age18p</code> (GID 859) &mdash; users aged 18 and older</li>
+      </ul>
+      <p style="margin-top:8px;">
+        Introduced in <a href="https://github.com/MidnightBSD/src/pull/317" style="color:var(--cyan);">PR #317</a>
+        (March 26, 2026). That PR is flagged "AI-Assisted-by: gemini 2.5 pro".
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>How It Differs from Linux</h3>
+    <p>
+      The Linux age verification ecosystem is building a multi-layer stack: systemd stores the data,
+      xdg-desktop-portal exposes the API, and desktop environments implement backends. The MidnightBSD
+      approach is architecturally simpler and, by BSD standards, more conventional.
+    </p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+      <div class="card">
+        <h4 style="margin-top:0;">Linux (Proposed)</h4>
+        <ul style="padding-left:20px; line-height:2;">
+          <li>D-Bus IPC</li>
+          <li>systemd userdb storage</li>
+          <li>xdg-desktop-portal API</li>
+          <li>Desktop-specific backends</li>
+          <li>Flatpak permission model</li>
+          <li>JSON user records</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:var(--red);">
+        <h4 style="margin-top:0;">MidnightBSD (Shipped)</h4>
+        <ul style="padding-left:20px; line-height:2;">
+          <li>Unix domain socket</li>
+          <li>SQLite database</li>
+          <li>C library in libutil</li>
+          <li>Unix group enforcement</li>
+          <li>rc.conf service management</li>
+          <li>Plaintext socket protocol</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="margin-top:16px;">
+      The practical consequence: on Linux, age reporting is still forming across multiple upstream
+      projects and no distribution has shipped an integrated mechanism. On MidnightBSD, the entire
+      stack &mdash; storage, API, enforcement &mdash; shipped in a single merge.
+    </p>
+  </section>
+
+  <section>
+    <h3>Socket Protocol</h3>
+    <p>
+      The daemon listens on <code>/var/run/aged/aged.sock</code>. The protocol is plaintext over
+      a Unix domain socket. Behavior depends on the caller's privilege level.
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Root (UID 0)</h4>
+      <p>
+        Root sends structured commands:
+      </p>
+<pre>SET &lt;uid&gt; &lt;type&gt; &lt;value&gt;</pre>
+      <p style="margin-top:8px;">
+        Where <code>type</code> is either <code>age</code> or <code>dob</code>, and
+        <code>value</code> is the integer age (2&ndash;125) or date of birth string.
+      </p>
+
+      <h4>Non-Root</h4>
+      <p>
+        Any data sent by a non-root client triggers a lookup of the caller's own UID. The daemon
+        responds with the caller's age bracket. The content of the message is irrelevant &mdash;
+        sending anything triggers the lookup.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Response Format</h4>
+      <p>
+        The daemon responds with a comma-delimited pair representing the lower and upper bounds of
+        the age bracket:
+      </p>
+
+      <div style="margin-top:16px;">
+        <table style="width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:14px;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-bright);">
+              <th style="text-align:left; padding:8px 12px; color:var(--text-bright);">Response</th>
+              <th style="text-align:left; padding:8px 12px; color:var(--text-bright);">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px; color:var(--green);"><code>0,12</code></td>
+              <td style="padding:8px 12px;">Under 13</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px; color:var(--green);"><code>13,15</code></td>
+              <td style="padding:8px 12px;">13 &ndash; 15</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px; color:var(--green);"><code>16,17</code></td>
+              <td style="padding:8px 12px;">16 &ndash; 17</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px; color:var(--green);"><code>18,-1</code></td>
+              <td style="padding:8px 12px;">18+ (no upper bound)</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; color:var(--green);"><code>-1,-1</code></td>
+              <td style="padding:8px 12px;">Unknown (no age data provided)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Age Bracket Mapping</h3>
+    <p>
+      The four age brackets correspond to the categories required by
+      <span class="legal-cite">AB 1043</span>:
+    </p>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:16px;">
+      <div class="card red-card" style="text-align:center;">
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-dim);">0,12</p>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:4px;">Under 13</p>
+        <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Group: age4p</p>
+      </div>
+      <div class="card yellow-card" style="text-align:center;">
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-dim);">13,15</p>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:4px;">13 &ndash; 15</p>
+        <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Group: age13p</p>
+      </div>
+      <div class="card" style="text-align:center; border-color:var(--blue);">
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-dim);">16,17</p>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:4px;">16 &ndash; 17</p>
+        <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Group: age16p</p>
+      </div>
+      <div class="card green-card" style="text-align:center;">
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--text-dim);">18,-1</p>
+        <p style="font-size:20px; font-weight:700; color:var(--text-bright); margin-top:4px;">18+</p>
+        <p style="font-size:12px; color:var(--text-dim); margin-top:4px;">Group: age18p</p>
+      </div>
+    </div>
+
+    <p style="margin-top:16px;">
+      Users with UIDs below 1000 (service accounts, <code>root</code>, <code>daemon</code>, etc.)
+      default to the 18+ bracket if no age has been explicitly set. Age values must be between 2
+      and 125 inclusive.
+    </p>
+  </section>
+
+  <section>
+    <h3>The agev(3) Library API</h3>
+    <p>
+      Three functions in libutil, declared in <code>&lt;libutil.h&gt;</code>:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">agev_get_age_bracket()</h4>
+<pre>int agev_get_age_bracket(uid_t uid, int *lower, int *upper);</pre>
+      <p style="margin-top:12px;">
+        Connects to the aged socket, sends a lookup request for the given UID, and parses the
+        comma-delimited response into <code>lower</code> and <code>upper</code> bounds.
+      </p>
+
+      <h4>agev_set_age()</h4>
+<pre>int agev_set_age(uid_t uid, int age);</pre>
+      <p style="margin-top:12px;">
+        Sends <code>SET &lt;uid&gt; age &lt;age&gt;</code> to the daemon. Requires root.
+      </p>
+
+      <h4>agev_set_dob()</h4>
+<pre>int agev_set_dob(uid_t uid, const char *dob);</pre>
+      <p style="margin-top:12px;">
+        Sends <code>SET &lt;uid&gt; dob &lt;dob&gt;</code> to the daemon. Requires root.
+      </p>
+    </div>
+
+    <p>
+      Because these functions are in libutil, any application compiled against MidnightBSD's base
+      system can query age brackets with a single function call. No library to install, no service to
+      discover, no IPC mechanism to negotiate. This is the simplest possible application-facing API.
+    </p>
+  </section>
+
+  <section>
+    <h3>Group-Based Enforcement</h3>
+    <p>
+      PR #317 added four Unix groups that the aged daemon manages based on the user's age bracket.
+      The mport package manager checks group membership to gate package installation:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">How It Works</h4>
+      <p>
+        When a user's age is set via <code>agectl</code> or the agev(3) library, the daemon
+        calculates the appropriate bracket and adds the user to the corresponding groups. A
+        16-year-old would be added to <code>age4p</code>, <code>age13p</code>, and
+        <code>age16p</code> but not <code>age18p</code>.
+      </p>
+      <p style="margin-top:8px;">
+        Packages in the mport repository can declare a minimum age group. A package marked as
+        requiring <code>age18p</code> will not install for users who are not members of that group.
+      </p>
+    </div>
+
+    <p>
+      This is enforcement at the package manager level &mdash; not just data collection. The Linux
+      ecosystem has not proposed anything equivalent. The D-Bus proposal and xdg-desktop-portal PR
+      define query APIs; they do not restrict what software a user can install based on their reported
+      age.
+    </p>
+  </section>
+
+  <section>
+    <h3>The Parsing Bug</h3>
+    <div class="card yellow-card">
+      <span class="badge badge-yellow">Known Bug</span>
+      <p style="margin-top:8px;">
+        <code>agev_get_age_bracket()</code> (introduced in
+        <a href="https://github.com/MidnightBSD/src/pull/310" style="color:var(--cyan);">PR #310</a>)
+        splits the daemon's response on <code>'-'</code> instead of <code>','</code>. The daemon
+        returns comma-delimited responses (e.g., <code>"13,15"</code>), but the library function
+        calls <code>strtok(response, "-")</code>.
+      </p>
+      <p style="margin-top:8px;">
+        This means 4 of the 5 possible response types are parsed incorrectly:
+      </p>
+      <ul style="margin-top:8px; padding-left:24px; line-height:2;">
+        <li><code>"0,12"</code> &mdash; never split, parsed as a single token</li>
+        <li><code>"13,15"</code> &mdash; never split, parsed as a single token</li>
+        <li><code>"16,17"</code> &mdash; never split, parsed as a single token</li>
+        <li><code>"18,-1"</code> &mdash; split on the <code>-</code> in <code>-1</code>, producing <code>"18,"</code> and <code>"1"</code></li>
+        <li><code>"-1,-1"</code> &mdash; split on the first <code>-</code>, producing <code>""</code> and <code>"1,"</code> and <code>"1"</code></li>
+      </ul>
+      <p style="margin-top:8px;">
+        The only response that would partially survive is <code>"18,-1"</code>, and even that
+        produces an incorrect upper bound of <code>1</code> instead of <code>-1</code>.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Self-Declaration Only</h3>
+    <p>
+      The aged daemon is purely self-declared. No identity verification, no document checks, no
+      network calls. The user (or root on their behalf) states an age, and the system believes them.
+    </p>
+    <p>
+      The PR author acknowledged this directly:
+    </p>
+    <blockquote>
+      "This will not comply with Brazil or the proposed law in New York. (they require ID checks)"
+      <span class="cite">&mdash; PR #302</span>
+    </blockquote>
+    <p style="margin-top:16px;">
+      This satisfies <span class="legal-cite">AB 1043</span>'s self-declaration model but is
+      insufficient for <span class="legal-cite">Brazil Lei 15.211</span> (which bans
+      self-declaration) and <span class="legal-cite">NY S8102A</span> (which requires "commercially
+      reasonable" verification).
+    </p>
+  </section>
+
+  <section>
+    <h3>Community Reception</h3>
+    <p>
+      PR #302 received two public comments, both negative:
+    </p>
+    <div class="card">
+      <ul style="padding-left:24px; line-height:2.2;">
+        <li>"Orwellian"</li>
+        <li>"Lame"</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Ageless Linux Position</h3>
+    <div class="card red-card">
+      <span class="badge badge-red">Removal Available</span>
+      <p style="margin-top:8px;">
+        MidnightBSD's aged daemon is the first age reporting implementation to ship. It is also the
+        first for which Ageless Linux provides non-speculative removal instructions. The daemon can
+        be disabled via <code>rc.conf</code>, the database deleted, and age group memberships removed.
+      </p>
+      <p style="margin-top:8px;">
+        Note: <code>become-ageless.sh</code> targets Debian-based Linux systems and does not support
+        BSD. The MidnightBSD removal procedure is documented as manual steps.
+      </p>
+      <p style="margin-top:16px;">
+        <a href="/removal/midnightbsd.html" class="btn btn-primary">Removal Guide</a>
+        <a href="/short-circuit/aged-stub.html" class="btn btn-outline" style="margin-left:8px;">Short-Circuit Guide</a>
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Source</h3>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+      <div><a href="https://github.com/MidnightBSD/src/pull/302" style="color:var(--cyan);">PR #302</a> &mdash; aged daemon and agectl CLI (March 9, 2026)</div>
+      <div><a href="https://github.com/MidnightBSD/src/pull/310" style="color:var(--cyan);">PR #310</a> &mdash; agev(3) library (introduced parsing bug)</div>
+      <div><a href="https://github.com/MidnightBSD/src/pull/317" style="color:var(--cyan);">PR #317</a> &mdash; age groups (March 26, 2026; AI-assisted)</div>
+      <div><a href="https://github.com/MidnightBSD/src/commits/master/usr.sbin/aged" style="color:var(--cyan);">aged commits</a> &mdash; full commit history</div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

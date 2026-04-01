@@ -33,8 +33,10 @@
       system providers to collect age data from users and expose it to applications via API. No Linux
       distribution has shipped an application-facing compliance mechanism yet, but the infrastructure
       is forming: systemd merged a <code>birthDate</code> field into user records on March 18, 2026,
-      and an xdg-desktop-portal PR defines the API layer. This section documents what's being built
-      so we can build removal tools to match.
+      and an xdg-desktop-portal PR defines the API layer. Outside of Linux, MidnightBSD has shipped
+      a complete age verification subsystem &mdash; the <a href="/age-reporting/aged.html" style="color:var(--cyan);">aged(8) daemon</a>
+      &mdash; making it the first operating system to merge a native implementation. This section
+      documents what's been built and what's being proposed so we can build removal tools to match.
     </p>
   </div>
 
@@ -98,10 +100,10 @@
   </section>
 
   <section>
-    <h3>Proposed Mechanisms</h3>
+    <h3>Implementation Mechanisms</h3>
     <p>
-      Four implementation paths are under discussion across the Linux ecosystem. Each is documented
-      in detail:
+      Four implementation paths are under discussion across the Linux ecosystem, and one has shipped
+      outside of it. Each is documented in detail:
     </p>
 
     <a href="/age-reporting/dbus.html" style="text-decoration:none; color:inherit;">
@@ -137,6 +139,19 @@
           field to user records. xdg-desktop-portal PR #1922 (open) defines the application-facing
           age range API. The original D-Bus proposal author now recommends this path. Ageless Linux
           already neutralizes the data layer; the API layer is being monitored.
+        </p>
+      </div>
+    </a>
+
+    <a href="/age-reporting/aged.html" style="text-decoration:none; color:inherit;">
+      <div class="card red-card">
+        <span class="badge badge-red">Shipped</span>
+        <h4 style="margin-top:12px;">MidnightBSD aged(8)</h4>
+        <p>
+          The first operating system to ship a native age verification implementation. A Unix daemon
+          with SQLite storage, a C library in libutil, a CLI tool, and four Unix groups for
+          package-level enforcement. Merged March 9, 2026. Enabled by default. Not a proposal &mdash;
+          production code.
         </p>
       </div>
     </a>

@@ -29,11 +29,12 @@
     <h2>Distro Status</h2>
     <h1>Who's Doing <em>What</em></h1>
     <p>
-      As of March 2026, no Linux distribution has shipped an age reporting implementation. Here's
-      where each stands.
+      As of March 2026, no Linux distribution has shipped an age reporting implementation. However,
+      MidnightBSD &mdash; a BSD, not Linux &mdash; has merged and shipped a complete subsystem.
+      Here's where each stands.
     </p>
     <p style="margin-top:8px;">
-      <span class="badge badge-dim" style="font-size:10px;">Last updated: March 19, 2026</span>
+      <span class="badge badge-dim" style="font-size:10px;">Last updated: March 29, 2026</span>
     </p>
   </div>
 
@@ -234,19 +235,40 @@
   <div class="card red-card">
     <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:8px;">
       <h4 style="margin-top:0; font-size:18px;">MidnightBSD</h4>
-      <span class="badge badge-red">Excluding</span>
+      <span class="badge badge-red">Shipped</span>
     </div>
     <p style="margin-top:12px;">
-      MidnightBSD modified its license to exclude California residents from desktop use, effective
-      January 1, 2027. The project is also excluding Brazil (effective March 17, 2026) and
-      threatening Colorado, Illinois, and New York exclusions if pending bills pass.
+      MidnightBSD is pursuing a dual strategy: geographic exclusion <em>and</em> a shipped
+      compliance implementation. The project modified its license to exclude California residents
+      from desktop use (effective January 1, 2027) and Brazil (effective March 17, 2026), with
+      threatened exclusions for Colorado, Illinois, and New York if pending bills pass.
     </p>
-    <p>
-      The project has separately drafted an alternative compliance approach: writing age data to a
-      root-only readable file. However, the license exclusion appears to be the primary response.
+    <p style="margin-top:8px;">
+      Separately, MidnightBSD merged a complete age verification subsystem &mdash; the
+      <a href="/age-reporting/aged.html" style="color:var(--cyan);">aged(8) daemon</a>. This
+      is the first operating system to ship a native implementation. The system consists of:
+    </p>
+    <ul style="margin-top:8px; padding-left:24px; line-height:2;">
+      <li><strong>aged(8)</strong> &mdash; daemon with SQLite storage, Unix socket at <code>/var/run/aged/aged.sock</code>, enabled by default</li>
+      <li><strong>agectl(8)</strong> &mdash; CLI for querying and setting age data</li>
+      <li><strong>agev(3)</strong> &mdash; C library in libutil with <code>agev_get_age_bracket()</code>, <code>agev_set_age()</code>, <code>agev_set_dob()</code></li>
+      <li><strong>Age groups</strong> &mdash; four Unix groups (<code>age4p</code>, <code>age13p</code>, <code>age16p</code>, <code>age18p</code>) for mport package gating</li>
+    </ul>
+    <p style="margin-top:8px;">
+      The implementation is purely self-declared &mdash; no ID checks, no network calls. The PR author
+      acknowledged this "will not comply with Brazil or the proposed law in New York." A
+      <a href="/age-reporting/aged.html" style="color:var(--cyan);">known parsing bug</a> in
+      <code>agev_get_age_bracket()</code> causes 4 of 5 response types to be parsed incorrectly.
+    </p>
+    <p style="margin-top:8px;">
+      Community reception: hostile. Two comments on PR #302: "Orwellian" and "Lame."
     </p>
     <p style="margin-top:8px; font-size:13px; color:var(--text-dim);">
-      Source: <a href="https://lunduke.substack.com" style="color:var(--cyan);">lunduke.substack.com</a>
+      Sources:
+      <a href="https://github.com/MidnightBSD/src/pull/302" style="color:var(--cyan);">PR #302</a>,
+      <a href="https://github.com/MidnightBSD/src/pull/310" style="color:var(--cyan);">PR #310</a>,
+      <a href="https://github.com/MidnightBSD/src/pull/317" style="color:var(--cyan);">PR #317</a>,
+      <a href="https://lunduke.substack.com" style="color:var(--cyan);">lunduke.substack.com</a>
     </p>
   </div>
 

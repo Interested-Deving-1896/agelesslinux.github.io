@@ -37,11 +37,13 @@
 
   <section>
     <div class="card yellow-card">
-      <h4 style="margin-top:0;">No implementation shipped yet</h4>
+      <h4 style="margin-top:0;">No Linux distro has shipped yet &mdash; but a BSD has.</h4>
       <p>
         No Linux distribution has shipped an age reporting implementation as of March 2026.
-        These guides will be populated with tested, step-by-step removal procedures as
-        implementations arrive. What you see below is our planned approach for each distribution.
+        MidnightBSD (a BSD, not Linux) has merged and shipped the
+        <a href="/age-reporting/aged.html" style="color:var(--cyan);">aged(8) daemon</a> &mdash; the
+        first native implementation from any operating system. The MidnightBSD removal guide below is
+        the first non-speculative guide on this site. The Linux distro guides remain pending.
       </p>
     </div>
   </section>
@@ -89,6 +91,14 @@
 
   <section>
     <h3>Distro-Specific Guides</h3>
+
+    <a href="/removal/midnightbsd.html" style="text-decoration:none; color:inherit;">
+      <div class="card red-card">
+        <span class="badge badge-red">LIVE</span>
+        <h4 style="margin-top:12px;">MidnightBSD</h4>
+        <p>The first non-speculative removal guide. Disable the aged(8) daemon, delete the SQLite database, remove age group memberships. Manual steps &mdash; <code>become-ageless.sh</code> does not support BSD.</p>
+      </div>
+    </a>
 
     <a href="/removal/ubuntu.html" style="text-decoration:none; color:inherit;">
       <div class="card">
