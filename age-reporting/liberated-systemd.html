@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liberated systemd — Ageless Linux Docs</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="https://agelesslinux.org" class="logo">AGELESS<span> LINUX</span></a>
+    <div class="links">
+      <a href="https://agelesslinux.org">Home</a>
+      <a href="/index.html">Docs</a>
+      <a href="/age-reporting/" class="active">Age Reporting</a>
+      <a href="/removal/">Removal</a>
+      <a href="/short-circuit/">Short-Circuit</a>
+      <a href="/device/">Device</a>
+      <a href="https://agelesslinux.org/map.html">State Laws</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Liberated systemd</h2>
+    <h1>The <em>Fork</em> That Removes birthDate</h1>
+    <p>
+      Three days after systemd merged
+      <a href="https://github.com/systemd/systemd/pull/40954" style="color:var(--cyan);">PR #40954</a>
+      (adding a <code>birthDate</code> field to user records), Jeffrey Sardina published a fork that
+      reverts the change and nothing else. Liberated systemd strips the age verification infrastructure
+      from systemd and stays in sync with upstream for everything else. It is the most prominent of at
+      least eleven forks that appeared in the days following the merge.
+    </p>
+  </div>
+
+  <section>
+    <h3>Overview</h3>
+
+    <div class="card yellow-card">
+      <span class="badge badge-yellow">Active Fork</span>
+      <p style="margin-top:8px;">
+        <strong>Repository:</strong>
+        <a href="https://github.com/Jeffrey-Sardina/systemd" style="color:var(--cyan);">github.com/Jeffrey-Sardina/systemd</a>
+        &mdash; 719 stars, 32 forks as of April 2026
+      </p>
+      <p style="margin-top:8px;">
+        <strong>Mirrors:</strong>
+        <a href="https://codeberg.org/Jeffrey-Sardina/systemd" style="color:var(--cyan);">Codeberg</a>,
+        <a href="https://gitea.com/terra-novalis/systemd" style="color:var(--cyan);">Gitea</a>
+      </p>
+      <p style="margin-top:8px;">
+        <strong>Companion repo:</strong>
+        <a href="https://github.com/Jeffrey-Sardina/systemd-suite" style="color:var(--cyan);">systemd-suite</a>
+        &mdash; patch management, testing automation, CI validation
+      </p>
+      <p style="margin-top:8px;">
+        <strong>Maintainer:</strong> Jeffrey Sardina, researcher at Trinity College Dublin (ADAPT Centre)
+      </p>
+      <p style="margin-top:8px;">
+        <strong>License:</strong> GPL-2.0 / LGPL-2.1 (matching upstream systemd)
+      </p>
+      <p style="margin-top:8px;">
+        <strong>Created:</strong> March 21, 2026 &mdash; three days after the birthDate merge
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>What It Does</h3>
+    <p>
+      Liberated systemd applies a single patch (<code>main.patch</code>) that reverts the upstream
+      commit adding <code>birthDate</code> support. The patch modifies 14 files &mdash; 10 functional
+      (source code, tests, man pages, documentation) and 4 repo-level metadata (rebranding to
+      Liberated systemd). The scope is narrow by design:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Functional Files Reverted</h4>
+      <pre>src/basic/time-util.c          # date parsing utilities added for birthDate
+src/basic/time-util.h
+src/home/homectl.c             # --birth-date= CLI option
+src/shared/user-record.c       # birthDate field in user record structs
+src/shared/user-record.h
+src/shared/user-record-show.c  # display code for birthDate
+src/test/test-time-util.c      # associated tests
+src/test/test-user-record.c
+man/homectl.xml                # man page documentation
+docs/USER_RECORD.md            # userdb field documentation</pre>
+    </div>
+
+    <div class="card" style="border-color:var(--accent);">
+      <h4 style="margin-top:0;">Denial, Not Deception</h4>
+      <p>
+        The maintainer explicitly chose not to insert a fake default date of birth. Applications that
+        call the age verification API get an error &mdash; the field does not exist. This is a
+        deliberate design decision:
+      </p>
+      <blockquote style="margin-top:12px;">
+        "I have not simply created a 'default age' as a lie &mdash; it's about denying
+        applications the ability to assume the presence of an API that enables mass surveillance."
+        <span class="cite">&mdash; Jeffrey Sardina, Liberated systemd README</span>
+      </blockquote>
+      <p style="margin-top:12px;">
+        This contrasts with Ageless Linux's approach (setting <code>birthDate</code> to the epoch
+        or null) and is arguably more aggressive: rather than neutralizing the data, it removes the
+        infrastructure entirely.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Update Cadence</h3>
+    <p>
+      The fork rebases against upstream systemd at least weekly. The systemd-suite repo is working
+      toward automating this to near-real-time. Before pushing, the maintainer runs systemd's own CI
+      pipeline (building from source and verifying that a VM boots). Because the birthDate code was a
+      self-contained addition rather than a deeply integrated feature, most upstream commits merge
+      without conflicts.
+    </p>
+  </section>
+
+  <section>
+    <h3>Distro Packaging</h3>
+    <p>
+      No major distribution has adopted Liberated systemd as its default. Packaging exists for
+      individual users on Arch Linux:
+    </p>
+
+    <div class="card">
+      <h4 style="margin-top:0;">AUR Packages</h4>
+      <p>
+        The Arch User Repository provides <code>systemd-liberated-git</code>,
+        <code>systemd-liberated-libs-git</code>, <code>systemd-liberated-ukify-git</code>, and
+        <code>systemd-liberated-tests-git</code> &mdash; drop-in replacements for the official
+        systemd packages built from the Liberated systemd source.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Pacman Repository</h4>
+      <p>
+        <a href="https://github.com/Jarmoco/systemd-ageless-archpkg" style="color:var(--cyan);">Jarmoco/systemd-ageless-archpkg</a>
+        provides a ready-to-use pacman repository with pre-built packages. Add it to
+        <code>pacman.conf</code> and the liberated packages replace official ones via standard
+        package management. Also supports local builds via PKGBUILD.
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Distros That Declined</h4>
+      <ul style="padding-left:24px; line-height:2.2;">
+        <li><strong>OpenMandriva</strong> &mdash; already builds systemd minimally; does not consider
+          the birthDate field a concern</li>
+        <li><strong>Garuda Linux</strong> &mdash; issued a formal statement refusing to implement age
+          verification, but will not switch to the fork; views the birthDate field as inert metadata
+          that does not impose verification</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>The Fork Ecosystem</h3>
+    <p>
+      Liberated systemd is the most maintained of at least eleven forks that appeared after the
+      birthDate merge. One notable second-generation fork uses it as upstream:
+    </p>
+
+    <div class="card" style="border-color:var(--blue);">
+      <h4 style="margin-top:0;">sonicd</h4>
+      <p>
+        <a href="https://github.com/supersonic-xserver/sonicd" style="color:var(--cyan);">supersonic-xserver/sonicd</a>
+        (27 stars) &mdash; a hardened fork that uses Liberated systemd as its upstream, adding
+        Clang/LLVM compilation, CodeQL security fixes, and a <code>bypassAgeVerification</code>
+        boolean field that defaults to <code>true</code>. Includes a null-attestation D-Bus interface
+        (<code>src/aged/aged_bypass</code>) and a management tool (<code>sonicd-age-toggle.sh</code>).
+      </p>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Other Forks</h4>
+      <p>
+        The remaining forks range from straightforward reverts to protest projects. Most are
+        single-commit forks with no ongoing maintenance. Representative examples:
+      </p>
+      <ul style="padding-left:24px; line-height:2.2;">
+        <li><strong>unshitted-systemd</strong> &mdash; strips age verification, AI code, and the
+          <code>realName</code> field</li>
+        <li><strong>systemd-saneagecheck</strong> &mdash; includes bypass and polling rate options</li>
+        <li><strong>systemd-no-age-verification</strong> &mdash; direct revert of the PR</li>
+        <li><strong>fightthesystemd</strong> &mdash; removes age verification and lighthouse</li>
+      </ul>
+      <p style="margin-top:12px; color:var(--text-dim); font-size:14px;">
+        Several additional protest forks exist with more colorful names. All share the same approach:
+        revert the birthDate commit. Only Liberated systemd and sonicd maintain ongoing sync with
+        upstream.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Harassment and Upstream Response</h3>
+    <p>
+      The systemd contributor who authored the original birthDate PR faced harassment, doxxing, and
+      death threats after the merge, forcing them to disable issues and pull requests across their
+      GitHub repositories. They subsequently proposed a compromise: implementing age verification
+      as a configurable option in the
+      <a href="https://calamares.io/" style="color:var(--cyan);">Calamares</a> installer framework,
+      with an on/off default that individual distributions could set. This would let distributions
+      that do not want age verification leave it off without maintaining a fork.
+    </p>
+    <p>
+      The contributor also predicted a future split in the Linux ecosystem &mdash; "mostly along the
+      lines of independent distributions and those with corporate backing" &mdash; over how age
+      verification infrastructure is handled.
+    </p>
+  </section>
+
+  <section>
+    <h3>Coverage</h3>
+    <p>
+      The fork and the broader reaction to the birthDate merge received significant coverage:
+    </p>
+    <ul style="padding-left:24px; line-height:2.4;">
+      <li><a href="https://itsfoss.com/news/systemd-fork-strips-out-age-verification/" style="color:var(--cyan);">It's FOSS</a> &mdash;
+        "Someone Forked Systemd to Strip Out Its Age Verification Support"</li>
+      <li><a href="https://www.theregister.com/2026/03/24/foss_age_verification/" style="color:var(--cyan);">The Register</a> &mdash;
+        "Age checks creep into Linux as systemd gets a DOB field"</li>
+      <li><a href="https://cybernews.com/privacy/systemd-forked-over-age-verification-quarrel/" style="color:var(--cyan);">CyberNews</a> &mdash;
+        "Systemd forks erupt on GitHub after maintainers approve age verification field"</li>
+      <li><a href="https://www.privacyguides.org/news/2026/03/30/systemd-offers-optional-age-verification/" style="color:var(--cyan);">Privacy Guides</a> &mdash;
+        "Systemd Offers Optional Age Verification"</li>
+      <li><a href="https://news.slashdot.org/story/26/03/28/2215230/systemd-contributor-harassed-over-optional-age-verification-field-suggests-installer-level-disabling" style="color:var(--cyan);">Slashdot</a> &mdash;
+        "SystemD Contributor Harassed Over Optional Age Verification Field"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Relationship to Ageless Linux</h3>
+    <div class="card" style="border-color:var(--accent);">
+      <p>
+        Liberated systemd and Ageless Linux address the same problem from different layers of the
+        stack. They are complementary, not competing:
+      </p>
+      <div style="margin:20px 0; font-family:'IBM Plex Mono',monospace; font-size:14px; line-height:2.4;">
+        <div><span style="color:var(--accent);">Liberated systemd</span> removes the birthDate API
+          entirely. Applications cannot query a field that does not exist. Downstream systems that
+          expect the API get an error.</div>
+        <div style="margin-top:8px;"><span style="color:var(--accent);">Ageless Linux</span> keeps
+          the API but neutralizes the data. <code>become-ageless.sh</code> sets
+          <code>birthDate</code> to the epoch (<code>1970-01-01</code>) or null. The field exists;
+          it reports nothing useful.</div>
+      </div>
+      <p style="margin-top:12px;">
+        The distinction matters at scale. Liberated systemd's approach breaks any application that
+        assumes the field exists &mdash; a harder stance that forces the ecosystem to handle the
+        absence. Ageless Linux's approach preserves API compatibility while rendering the data
+        meaningless &mdash; a softer stance that avoids breakage but still defeats the purpose of
+        age collection. Both refuse the premise that operating systems should facilitate age
+        verification.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    Ageless Linux Documentation<br>
+    A project of <a href="https://ffwf.net">FFwF Robotics LLC</a> · <a href="https://agelesslinux.org">agelesslinux.org</a> · <a href="https://agelesslinux.org/support.html">Support</a><br>
+    <div class="legal-footer">
+      This documentation describes tools for removing age reporting infrastructure from Linux systems.<br>
+      SPDX-License-Identifier: Unlicense
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
